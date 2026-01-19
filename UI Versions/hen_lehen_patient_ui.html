@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hen Lehen - Patient UI | هُنَّ لَهُنَّ - واجهة المريضة</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', 'Poppins', sans-serif;
+            min-height: 100vh;
+            transition: background 0.3s ease;
+        }
+        body.light { background: linear-gradient(135deg, #FDF8F3 0%, #F5EEDC 100%); }
+        body.dark { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            border-radius: 40px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .screen-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 40px;
+            justify-content: center;
+        }
+        .screen-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .screen-label {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .light .screen-label { color: #8B7355; }
+        .dark .screen-label { color: #D4A5A5; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            transition: background 0.3s ease;
+        }
+        .light .controls { background: rgba(255,255,255,0.9); }
+        .dark .controls { background: rgba(26,26,46,0.9); }
+        
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Tajawal', 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-btn.active {
+            background: linear-gradient(135deg, #D4A5A5 0%, #C48B8B 100%);
+            color: white;
+        }
+        .light .control-btn:not(.active) { background: #F5EEDC; color: #8B7355; }
+        .dark .control-btn:not(.active) { background: #2d2d44; color: #D4A5A5; }
+        
+        h1 { text-align: center; padding: 30px; font-size: 28px; transition: color 0.3s ease; }
+        .light h1 { color: #8B7355; }
+        .dark h1 { color: #F5EEDC; }
+        
+        .subtitle {
+            text-align: center;
+            margin-top: -20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+        .light .subtitle { color: #A89080; }
+        .dark .subtitle { color: #D4A5A5; }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 0 5px;
+        }
+        .badge.patient { background: #D4A5A5; color: white; }
+    </style>
+</head>
+<body class="light">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, createContext, useContext } = React;
+        
+        // Theme Context
+        const ThemeContext = createContext();
+        
+        // Language Context
+        const LangContext = createContext();
+        
+        // Translations
+        const translations = {
+            ar: {
+                // General
+                appName: 'هُنَّ لَهُنَّ',
+                appNameEn: 'Hen Lehen',
+                patientUI: 'واجهة المريضة',
+                welcome: 'أهلاً بيكي',
+                welcomeBack: 'نورتينا',
+                next: 'التالي',
+                continue: 'متابعة',
+                confirm: 'تأكيد',
+                cancel: 'إلغاء',
+                save: 'حفظ',
+                edit: 'تعديل',
+                logout: 'تسجيل الخروج',
+                
+                // Onboarding
+                onboardingTitle1: 'مكان آمن ليكي',
+                onboardingDesc1: 'اتكلمي مع دكتورات متخصصات في مكان خاص وآمن بيحترم خصوصيتك',
+                onboardingTitle2: 'خصوصية تامة',
+                onboardingDesc2: 'كل بياناتك ومحادثاتك مشفرة ومحدش بيشوفها غيرك وغير الدكتورة',
+                onboardingTitle3: 'دكتورات موثوقات',
+                onboardingDesc3: 'كل الدكتورات عندنا معتمدات ومتخصصات في مجالاتهم',
+                
+                // Role Selection
+                chooseRole: 'اختاري نوع حسابك',
+                patient: 'مريضة',
+                patientDesc: 'دوري على دكتورة واحجزي موعد',
+                doctor: 'دكتورة',
+                doctorDesc: 'قدمي استشاراتك الطبية',
+                
+                // Auth
+                login: 'تسجيل الدخول',
+                register: 'إنشاء حساب',
+                email: 'الإيميل',
+                password: 'الباسورد',
+                confirmPassword: 'تأكيد الباسورد',
+                fullName: 'الاسم بالكامل',
+                phone: 'رقم الموبايل',
+                forgotPassword: 'نسيتي الباسورد؟',
+                noAccount: 'معندكيش حساب؟',
+                haveAccount: 'عندك حساب؟',
+                registerNow: 'سجلي دلوقتي',
+                loginNow: 'سجلي دخولك',
+                termsAgree: 'بالتسجيل، انتي موافقة على',
+                terms: 'الشروط والأحكام',
+                privacy: 'سياسة الخصوصية',
+                
+                // Home
+                hello: 'أهلاً',
+                searchPlaceholder: 'دوري على دكتورة أو تخصص...',
+                healthFirst: 'صحتك أولويتنا',
+                bookNow: 'احجزي دلوقتي',
+                specialties: 'التخصصات',
+                viewAll: 'شوفي الكل',
+                topDoctors: 'أبدوي الدكتورات',
+                yearsExp: 'سنة خبرة',
+                
+                // Specialties
+                gynecology: 'نسا وتوليد',
+                psychology: 'نفسية',
+                dental: 'أسنان',
+                dermatology: 'جلدية',
+                ophthalmology: 'عيون',
+                nutrition: 'تغذية',
+                
+                // Doctor Profile
+                about: 'عني',
+                workingHours: 'مواعيد الشغل',
+                reviews: 'التقييمات',
+                patients: 'مريضة',
+                experience: 'خبرة',
+                rating: 'التقييم',
+                bookAppointment: 'احجزي موعد',
+                
+                // Booking
+                selectDate: 'اختاري التاريخ',
+                selectTime: 'اختاري الوقت',
+                consultationType: 'نوع الاستشارة',
+                chat: 'محادثة',
+                video: 'فيديو',
+                consultationFee: 'رسوم الاستشارة',
+                confirmBooking: 'أكدي الحجز',
+                
+                // Days
+                sunday: 'الحد',
+                monday: 'الاتنين',
+                tuesday: 'التلات',
+                wednesday: 'الأربع',
+                thursday: 'الخميس',
+                friday: 'الجمعة',
+                saturday: 'السبت',
+                
+                // Booking Success
+                bookingSuccess: 'تم الحجز بنجاح! 🎉',
+                appointmentConfirmed: 'موعدك اتأكد مع',
+                viewDetails: 'شوفي التفاصيل',
+                backHome: 'ارجعي للرئيسية',
+                
+                // Chat
+                online: 'متصلة دلوقتي',
+                typeMessage: 'اكتبي رسالتك...',
+                
+                // Appointments
+                myAppointments: 'مواعيدي',
+                upcoming: 'الجاية',
+                past: 'اللي فاتت',
+                cancelled: 'الملغية',
+                confirmed: 'متأكد',
+                pending: 'مستني',
+                startChat: 'ابدأي المحادثة',
+                newConsultation: 'استشارة جديدة',
+                followUp: 'متابعة',
+                
+                // Profile
+                myProfile: 'حسابي',
+                editProfile: 'عدلي الملف',
+                medicalHistory: 'السجل الطبي',
+                medications: 'الأدوية',
+                medicalReports: 'التقارير الطبية',
+                favoriteDoctors: 'الدكتورات المفضلين',
+                notifications: 'الإشعارات',
+                appearance: 'المظهر',
+                privacySecurity: 'الخصوصية والأمان',
+                help: 'المساعدة',
+                
+                // Navigation
+                home: 'الرئيسية',
+                appointments: 'المواعيد',
+                messages: 'الرسائل',
+                profile: 'حسابي',
+                
+                // Currency
+                currency: 'ج.م',
+            },
+            en: {
+                // General
+                appName: 'Hen Lehen',
+                appNameEn: 'هُنَّ لَهُنَّ',
+                patientUI: 'Patient Interface',
+                welcome: 'Welcome',
+                welcomeBack: 'Welcome Back',
+                next: 'Next',
+                continue: 'Continue',
+                confirm: 'Confirm',
+                cancel: 'Cancel',
+                save: 'Save',
+                edit: 'Edit',
+                logout: 'Logout',
+                
+                // Onboarding
+                onboardingTitle1: 'A Safe Space for You',
+                onboardingDesc1: 'Connect with specialized female doctors in a private and safe environment that respects your privacy',
+                onboardingTitle2: 'Complete Privacy',
+                onboardingDesc2: 'All your data and conversations are encrypted and only visible to you and your doctor',
+                onboardingTitle3: 'Trusted Doctors',
+                onboardingDesc3: 'All our doctors are certified and specialized in their fields',
+                
+                // Role Selection
+                chooseRole: 'Choose your account type',
+                patient: 'Patient',
+                patientDesc: 'Find a doctor and book an appointment',
+                doctor: 'Doctor',
+                doctorDesc: 'Provide medical consultations',
+                
+                // Auth
+                login: 'Login',
+                register: 'Create Account',
+                email: 'Email',
+                password: 'Password',
+                confirmPassword: 'Confirm Password',
+                fullName: 'Full Name',
+                phone: 'Phone Number',
+                forgotPassword: 'Forgot Password?',
+                noAccount: "Don't have an account?",
+                haveAccount: 'Already have an account?',
+                registerNow: 'Register Now',
+                loginNow: 'Login Now',
+                termsAgree: 'By registering, you agree to our',
+                terms: 'Terms & Conditions',
+                privacy: 'Privacy Policy',
+                
+                // Home
+                hello: 'Hello',
+                searchPlaceholder: 'Search for a doctor or specialty...',
+                healthFirst: 'Your Health is Our Priority',
+                bookNow: 'Book Now',
+                specialties: 'Specialties',
+                viewAll: 'View All',
+                topDoctors: 'Top Doctors',
+                yearsExp: 'years exp',
+                
+                // Specialties
+                gynecology: 'Gynecology',
+                psychology: 'Psychology',
+                dental: 'Dental',
+                dermatology: 'Dermatology',
+                ophthalmology: 'Ophthalmology',
+                nutrition: 'Nutrition',
+                
+                // Doctor Profile
+                about: 'About',
+                workingHours: 'Working Hours',
+                reviews: 'Reviews',
+                patients: 'Patients',
+                experience: 'Experience',
+                rating: 'Rating',
+                bookAppointment: 'Book Appointment',
+                
+                // Booking
+                selectDate: 'Select Date',
+                selectTime: 'Select Time',
+                consultationType: 'Consultation Type',
+                chat: 'Chat',
+                video: 'Video',
+                consultationFee: 'Consultation Fee',
+                confirmBooking: 'Confirm Booking',
+                
+                // Days
+                sunday: 'Sun',
+                monday: 'Mon',
+                tuesday: 'Tue',
+                wednesday: 'Wed',
+                thursday: 'Thu',
+                friday: 'Fri',
+                saturday: 'Sat',
+                
+                // Booking Success
+                bookingSuccess: 'Booking Successful! 🎉',
+                appointmentConfirmed: 'Your appointment is confirmed with',
+                viewDetails: 'View Details',
+                backHome: 'Back to Home',
+                
+                // Chat
+                online: 'Online Now',
+                typeMessage: 'Type your message...',
+                
+                // Appointments
+                myAppointments: 'My Appointments',
+                upcoming: 'Upcoming',
+                past: 'Past',
+                cancelled: 'Cancelled',
+                confirmed: 'Confirmed',
+                pending: 'Pending',
+                startChat: 'Start Chat',
+                newConsultation: 'New Consultation',
+                followUp: 'Follow-up',
+                
+                // Profile
+                myProfile: 'My Profile',
+                editProfile: 'Edit Profile',
+                medicalHistory: 'Medical History',
+                medications: 'Medications',
+                medicalReports: 'Medical Reports',
+                favoriteDoctors: 'Favorite Doctors',
+                notifications: 'Notifications',
+                appearance: 'Appearance',
+                privacySecurity: 'Privacy & Security',
+                help: 'Help',
+                
+                // Navigation
+                home: 'Home',
+                appointments: 'Appointments',
+                messages: 'Messages',
+                profile: 'Profile',
+                
+                // Currency
+                currency: 'EGP',
+            }
+        };
+        
+        // Theme Colors
+        const themes = {
+            light: {
+                primary: '#F5EEDC',
+                primaryDark: '#EDE4D3',
+                accent: '#D4A5A5',
+                accentDark: '#C48B8B',
+                text: '#5D4E3E',
+                textLight: '#8B7355',
+                white: '#FFFFFF',
+                background: '#FDF8F3',
+                card: '#FFFFFF',
+                success: '#A8D5BA',
+                pink: '#F8E8E8',
+                pinkDark: '#E8D0D0',
+                shadow: 'rgba(0,0,0,0.08)',
+                navBg: '#FFFFFF',
+            },
+            dark: {
+                primary: '#2d2d44',
+                primaryDark: '#252538',
+                accent: '#D4A5A5',
+                accentDark: '#C48B8B',
+                text: '#F5EEDC',
+                textLight: '#B8A898',
+                white: '#1a1a2e',
+                background: '#12121f',
+                card: '#1e1e32',
+                success: '#4a9d6b',
+                pink: '#3d2d3d',
+                pinkDark: '#2d2030',
+                shadow: 'rgba(0,0,0,0.3)',
+                navBg: '#1a1a2e',
+            }
+        };
+        
+        // Phone Frame
+        const PhoneFrame = ({ children }) => {
+            const { theme } = useContext(ThemeContext);
+            const colors = themes[theme];
+            
+            return (
+                <div className="phone-frame" style={{ background: colors.background }}>
+                    <div style={{ 
+                        height: '44px', 
+                        background: colors.background,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'flex-end',
+                        paddingBottom: '8px'
+                    }}>
+                        <div style={{ 
+                            width: '120px', 
+                            height: '28px', 
+                            background: theme === 'dark' ? '#000' : '#1a1a1a',
+                            borderRadius: '20px'
+                        }}></div>
+                    </div>
+                    {children}
+                </div>
+            );
+        };
+        
+        // Splash Screen
+        const SplashScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        background: `linear-gradient(180deg, ${colors.pink} 0%, ${colors.primary} 100%)`,
+                        padding: '40px'
+                    }}>
+                        <div style={{
+                            width: '140px',
+                            height: '140px',
+                            borderRadius: '70px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginBottom: '30px',
+                            boxShadow: `0 15px 40px ${colors.shadow}`
+                        }}>
+                            <span style={{ fontSize: '50px' }}>🌸</span>
+                        </div>
+                        <h1 style={{ 
+                            fontSize: '36px', 
+                            color: colors.text,
+                            marginBottom: '10px',
+                            fontWeight: '800'
+                        }}>{t.appName}</h1>
+                        <p style={{ 
+                            fontSize: '18px', 
+                            color: colors.textLight,
+                            marginBottom: '5px'
+                        }}>{t.appNameEn}</p>
+                        <p style={{ 
+                            fontSize: '14px', 
+                            color: colors.textLight,
+                            textAlign: 'center',
+                            marginTop: '20px'
+                        }}>{lang === 'ar' ? 'منصة طبية آمنة للنساء فقط' : 'A Safe Medical Platform for Women Only'}</p>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Onboarding Screen
+        const OnboardingScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.card,
+                        padding: '20px'
+                    }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                            <div style={{
+                                width: '220px',
+                                height: '220px',
+                                borderRadius: '110px',
+                                background: colors.pink,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginBottom: '40px'
+                            }}>
+                                <span style={{ fontSize: '90px' }}>👩‍⚕️</span>
+                            </div>
+                            <h2 style={{ 
+                                fontSize: '24px', 
+                                color: colors.text,
+                                marginBottom: '15px',
+                                textAlign: 'center'
+                            }}>{t.onboardingTitle1}</h2>
+                            <p style={{ 
+                                fontSize: '15px', 
+                                color: colors.textLight,
+                                textAlign: 'center',
+                                lineHeight: '1.8',
+                                padding: '0 20px'
+                            }}>{t.onboardingDesc1}</p>
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '30px' }}>
+                            <div style={{ width: '30px', height: '8px', borderRadius: '4px', background: colors.accent }}></div>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: colors.primaryDark }}></div>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: colors.primaryDark }}></div>
+                        </div>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '18px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#fff',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer',
+                            boxShadow: `0 8px 25px ${colors.shadow}`
+                        }}>{t.next} ←</button>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Role Selection Screen
+        const RoleSelectionScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.card,
+                        padding: '30px 20px'
+                    }}>
+                        <h2 style={{ 
+                            fontSize: '26px', 
+                            color: colors.text,
+                            marginBottom: '10px',
+                            textAlign: 'center'
+                        }}>{t.welcome} 🌸</h2>
+                        <p style={{ 
+                            fontSize: '15px', 
+                            color: colors.textLight,
+                            textAlign: 'center',
+                            marginBottom: '50px'
+                        }}>{t.chooseRole}</p>
+                        
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{
+                                padding: '30px',
+                                background: colors.pink,
+                                borderRadius: '24px',
+                                border: `3px solid ${colors.accent}`,
+                                cursor: 'pointer'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                    <div style={{
+                                        width: '70px',
+                                        height: '70px',
+                                        borderRadius: '35px',
+                                        background: colors.card,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        fontSize: '35px'
+                                    }}>👤</div>
+                                    <div>
+                                        <h3 style={{ fontSize: '20px', color: colors.text, marginBottom: '5px' }}>{t.patient}</h3>
+                                        <p style={{ fontSize: '13px', color: colors.textLight }}>{t.patientDesc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style={{
+                                padding: '30px',
+                                background: colors.primary,
+                                borderRadius: '24px',
+                                border: '3px solid transparent',
+                                cursor: 'pointer'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                    <div style={{
+                                        width: '70px',
+                                        height: '70px',
+                                        borderRadius: '35px',
+                                        background: colors.card,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        fontSize: '35px'
+                                    }}>👩‍⚕️</div>
+                                    <div>
+                                        <h3 style={{ fontSize: '20px', color: colors.text, marginBottom: '5px' }}>{t.doctor}</h3>
+                                        <p style={{ fontSize: '13px', color: colors.textLight }}>{t.doctorDesc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '18px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#fff',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer',
+                            marginTop: '30px'
+                        }}>{t.continue}</button>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Login Screen
+        const LoginScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.card,
+                        padding: '30px 20px'
+                    }}>
+                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '40px',
+                                background: colors.pink,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                margin: '0 auto 20px',
+                                fontSize: '35px'
+                            }}>🌸</div>
+                            <h2 style={{ fontSize: '24px', color: colors.text, marginBottom: '8px' }}>{t.login}</h2>
+                            <p style={{ fontSize: '14px', color: colors.textLight }}>{t.welcomeBack}</p>
+                        </div>
+                        
+                        <div style={{ flex: 1 }}>
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ fontSize: '14px', color: colors.textLight, display: 'block', marginBottom: '8px' }}>{t.email}</label>
+                                <input 
+                                    type="email" 
+                                    placeholder="example@email.com"
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px 20px',
+                                        border: `2px solid ${colors.primaryDark}`,
+                                        borderRadius: '14px',
+                                        fontSize: '16px',
+                                        fontFamily: 'Tajawal, Poppins',
+                                        outline: 'none',
+                                        background: colors.background,
+                                        color: colors.text,
+                                        direction: 'ltr',
+                                        textAlign: 'left'
+                                    }}
+                                />
+                            </div>
+                            
+                            <div style={{ marginBottom: '15px' }}>
+                                <label style={{ fontSize: '14px', color: colors.textLight, display: 'block', marginBottom: '8px' }}>{t.password}</label>
+                                <input 
+                                    type="password" 
+                                    placeholder="••••••••"
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px 20px',
+                                        border: `2px solid ${colors.primaryDark}`,
+                                        borderRadius: '14px',
+                                        fontSize: '16px',
+                                        fontFamily: 'Tajawal, Poppins',
+                                        outline: 'none',
+                                        background: colors.background,
+                                        color: colors.text
+                                    }}
+                                />
+                            </div>
+                            
+                            <p style={{ 
+                                fontSize: '13px', 
+                                color: colors.accent, 
+                                textAlign: lang === 'ar' ? 'left' : 'right',
+                                cursor: 'pointer'
+                            }}>{t.forgotPassword}</p>
+                        </div>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '18px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#fff',
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer',
+                            marginBottom: '15px'
+                        }}>{t.login}</button>
+                        
+                        <p style={{ 
+                            fontSize: '14px', 
+                            color: colors.textLight,
+                            textAlign: 'center'
+                        }}>{t.noAccount} <span style={{ color: colors.accent, fontWeight: '700', cursor: 'pointer' }}>{t.registerNow}</span></p>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Register Screen
+        const RegisterScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.card,
+                        padding: '20px'
+                    }}>
+                        <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+                            <h2 style={{ fontSize: '24px', color: colors.text, marginBottom: '8px' }}>{t.register}</h2>
+                            <p style={{ fontSize: '14px', color: colors.textLight }}>{lang === 'ar' ? 'انضمي لمجتمعنا' : 'Join our community'}</p>
+                        </div>
+                        
+                        <div style={{ flex: 1, overflowY: 'auto' }}>
+                            {[
+                                { label: t.fullName, type: 'text', placeholder: lang === 'ar' ? 'ادخلي اسمك' : 'Enter your name' },
+                                { label: t.email, type: 'email', placeholder: 'example@email.com', dir: 'ltr' },
+                                { label: t.phone, type: 'tel', placeholder: '+20 XX XXXX XXXX', dir: 'ltr' },
+                                { label: t.password, type: 'password', placeholder: '••••••••' },
+                            ].map((field, i) => (
+                                <div key={i} style={{ marginBottom: '16px' }}>
+                                    <label style={{ fontSize: '14px', color: colors.textLight, display: 'block', marginBottom: '6px' }}>{field.label}</label>
+                                    <input 
+                                        type={field.type}
+                                        placeholder={field.placeholder}
+                                        style={{
+                                            width: '100%',
+                                            padding: '14px 18px',
+                                            border: `2px solid ${colors.primaryDark}`,
+                                            borderRadius: '14px',
+                                            fontSize: '15px',
+                                            fontFamily: 'Tajawal, Poppins',
+                                            outline: 'none',
+                                            background: colors.background,
+                                            color: colors.text,
+                                            direction: field.dir || 'inherit',
+                                            textAlign: field.dir === 'ltr' ? 'left' : 'inherit'
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                            
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '20px' }}>
+                                <input type="checkbox" style={{ marginTop: '4px', accentColor: colors.accent }} />
+                                <p style={{ fontSize: '12px', color: colors.textLight, lineHeight: '1.6' }}>
+                                    {t.termsAgree} <span style={{ color: colors.accent }}>{t.terms}</span> & <span style={{ color: colors.accent }}>{t.privacy}</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '16px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#fff',
+                            fontSize: '17px',
+                            fontWeight: '700',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer',
+                            marginBottom: '12px'
+                        }}>{t.register}</button>
+                        
+                        <p style={{ 
+                            fontSize: '14px', 
+                            color: colors.textLight,
+                            textAlign: 'center'
+                        }}>{t.haveAccount} <span style={{ color: colors.accent, fontWeight: '700' }}>{t.loginNow}</span></p>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Patient Home Screen
+        const PatientHomeScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            const specialties = [
+                { icon: '🤰', name: t.gynecology },
+                { icon: '🧠', name: t.psychology },
+                { icon: '🦷', name: t.dental },
+                { icon: '👁️', name: t.ophthalmology }
+            ];
+            
+            const doctors = [
+                { name: lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali', spec: t.gynecology, rating: '4.9', exp: '15' },
+                { name: lang === 'ar' ? 'د. هند السعيد' : 'Dr. Hind Said', spec: t.psychology, rating: '4.8', exp: '10' }
+            ];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.background
+                    }}>
+                        {/* Header */}
+                        <div style={{ 
+                            padding: '20px',
+                            background: colors.card,
+                            borderRadius: '0 0 30px 30px'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <div>
+                                    <p style={{ fontSize: '14px', color: colors.textLight }}>{t.hello} 👋</p>
+                                    <h2 style={{ fontSize: '20px', color: colors.text }}>{lang === 'ar' ? 'منة ماهر' : 'Sara Ahmed'}</h2>
+                                </div>
+                                <div style={{
+                                    width: '50px',
+                                    height: '50px',
+                                    borderRadius: '25px',
+                                    background: colors.pink,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    fontSize: '24px'
+                                }}>👤</div>
+                            </div>
+                            
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '14px 18px',
+                                background: colors.primary,
+                                borderRadius: '14px'
+                            }}>
+                                <span>🔍</span>
+                                <input 
+                                    placeholder={t.searchPlaceholder}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        flex: 1,
+                                        fontSize: '14px',
+                                        fontFamily: 'Tajawal, Poppins',
+                                        outline: 'none',
+                                        color: colors.text
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            {/* Banner */}
+                            <div style={{
+                                padding: '20px',
+                                background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                                borderRadius: '20px',
+                                marginBottom: '25px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <h3 style={{ fontSize: '16px', color: '#fff', marginBottom: '5px' }}>{t.healthFirst}</h3>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>{t.bookNow}</p>
+                                </div>
+                                <span style={{ fontSize: '50px' }}>💗</span>
+                            </div>
+                            
+                            {/* Specialties */}
+                            <div style={{ marginBottom: '25px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                    <h3 style={{ fontSize: '16px', color: colors.text }}>{t.specialties}</h3>
+                                    <span style={{ fontSize: '13px', color: colors.accent }}>{t.viewAll}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
+                                    {specialties.map((spec, i) => (
+                                        <div key={i} style={{
+                                            minWidth: '80px',
+                                            padding: '15px 12px',
+                                            background: colors.card,
+                                            borderRadius: '16px',
+                                            textAlign: 'center',
+                                            boxShadow: `0 4px 15px ${colors.shadow}`
+                                        }}>
+                                            <span style={{ fontSize: '28px' }}>{spec.icon}</span>
+                                            <p style={{ fontSize: '11px', color: colors.text, marginTop: '8px' }}>{spec.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* Top Doctors */}
+                            <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                    <h3 style={{ fontSize: '16px', color: colors.text }}>{t.topDoctors}</h3>
+                                    <span style={{ fontSize: '13px', color: colors.accent }}>{t.viewAll}</span>
+                                </div>
+                                
+                                {doctors.map((doc, i) => (
+                                    <div key={i} style={{
+                                        display: 'flex',
+                                        gap: '15px',
+                                        padding: '15px',
+                                        background: colors.card,
+                                        borderRadius: '18px',
+                                        marginBottom: '12px',
+                                        boxShadow: `0 4px 15px ${colors.shadow}`
+                                    }}>
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '30px',
+                                            background: colors.pink,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            fontSize: '28px'
+                                        }}>👩‍⚕️</div>
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ fontSize: '15px', color: colors.text, marginBottom: '4px' }}>{doc.name}</h4>
+                                            <p style={{ fontSize: '12px', color: colors.textLight, marginBottom: '6px' }}>{doc.spec}</p>
+                                            <div style={{ display: 'flex', gap: '15px' }}>
+                                                <span style={{ fontSize: '11px', color: colors.accent }}>⭐ {doc.rating}</span>
+                                                <span style={{ fontSize: '11px', color: colors.textLight }}>🕐 {doc.exp} {t.yearsExp}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Bottom Navigation */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-around',
+                            padding: '15px 20px 25px',
+                            background: colors.navBg,
+                            borderRadius: '25px 25px 0 0',
+                            boxShadow: `0 -5px 20px ${colors.shadow}`
+                        }}>
+                            {[
+                                { icon: '🏠', label: t.home, active: true },
+                                { icon: '📅', label: t.appointments },
+                                { icon: '💬', label: t.messages },
+                                { icon: '👤', label: t.profile }
+                            ].map((item, i) => (
+                                <div key={i} style={{ textAlign: 'center' }}>
+                                    <div style={{
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '15px',
+                                        background: item.active ? colors.accent : 'transparent',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        margin: '0 auto 5px',
+                                        fontSize: '20px'
+                                    }}>{item.icon}</div>
+                                    <span style={{ 
+                                        fontSize: '10px', 
+                                        color: item.active ? colors.accent : colors.textLight 
+                                    }}>{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Doctor Profile Screen
+        const DoctorProfileScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.background
+                    }}>
+                        <div style={{
+                            padding: '20px',
+                            paddingTop: '10px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            borderRadius: '0 0 35px 35px',
+                            textAlign: 'center',
+                            color: '#fff'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                <span style={{ fontSize: '20px' }}>→</span>
+                                <span style={{ fontSize: '20px' }}>♡</span>
+                            </div>
+                            
+                            <div style={{
+                                width: '100px',
+                                height: '100px',
+                                borderRadius: '50px',
+                                background: '#fff',
+                                margin: '0 auto 15px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                fontSize: '50px',
+                                border: '4px solid rgba(255,255,255,0.3)'
+                            }}>👩‍⚕️</div>
+                            
+                            <h2 style={{ fontSize: '22px', marginBottom: '5px' }}>{lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali'}</h2>
+                            <p style={{ fontSize: '14px', opacity: 0.9, marginBottom: '15px' }}>{lang === 'ar' ? 'استشارية نسا وتوليد' : 'Gynecology Consultant'}</p>
+                            
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <p style={{ fontSize: '18px', fontWeight: '700' }}>15</p>
+                                    <p style={{ fontSize: '11px', opacity: 0.8 }}>{t.yearsExp}</p>
+                                </div>
+                                <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }}></div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <p style={{ fontSize: '18px', fontWeight: '700' }}>4.9</p>
+                                    <p style={{ fontSize: '11px', opacity: 0.8 }}>{t.rating}</p>
+                                </div>
+                                <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }}></div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <p style={{ fontSize: '18px', fontWeight: '700' }}>500+</p>
+                                    <p style={{ fontSize: '11px', opacity: 0.8 }}>{t.patients}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            <div style={{
+                                background: colors.card,
+                                padding: '18px',
+                                borderRadius: '18px',
+                                marginBottom: '15px'
+                            }}>
+                                <h3 style={{ fontSize: '15px', color: colors.text, marginBottom: '10px' }}>{t.about}</h3>
+                                <p style={{ fontSize: '13px', color: colors.textLight, lineHeight: '1.8' }}>
+                                    {lang === 'ar' 
+                                        ? 'استشارية متخصصة في طب النسا والتوليد مع خبرة تزيد عن 15 سنة. حاصلة على البورد والزمالة البريطانية.'
+                                        : 'Specialized consultant in gynecology with over 15 years of experience. Board certified with British fellowship.'}
+                                </p>
+                            </div>
+                            
+                            <div style={{
+                                background: colors.card,
+                                padding: '18px',
+                                borderRadius: '18px',
+                                marginBottom: '15px'
+                            }}>
+                                <h3 style={{ fontSize: '15px', color: colors.text, marginBottom: '12px' }}>{t.workingHours}</h3>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                    {[t.sunday, t.monday, t.tuesday, t.wednesday].map((day, i) => (
+                                        <span key={i} style={{
+                                            padding: '8px 14px',
+                                            background: colors.pink,
+                                            borderRadius: '10px',
+                                            fontSize: '12px',
+                                            color: colors.text
+                                        }}>{day}</span>
+                                    ))}
+                                </div>
+                                <p style={{ fontSize: '12px', color: colors.textLight, marginTop: '10px' }}>
+                                    {lang === 'ar' ? 'من 9:00 ص - 5:00 م' : '9:00 AM - 5:00 PM'}
+                                </p>
+                            </div>
+                            
+                            <div style={{
+                                background: colors.card,
+                                padding: '18px',
+                                borderRadius: '18px'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                    <h3 style={{ fontSize: '15px', color: colors.text }}>{t.reviews}</h3>
+                                    <span style={{ fontSize: '12px', color: colors.accent }}>{t.viewAll}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '20px',
+                                        background: colors.primary,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>👤</div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                            <span style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>{lang === 'ar' ? 'أمل محمد' : 'Amal Mohamed'}</span>
+                                            <span style={{ fontSize: '11px', color: colors.accent }}>⭐⭐⭐⭐⭐</span>
+                                        </div>
+                                        <p style={{ fontSize: '12px', color: colors.textLight, lineHeight: '1.6' }}>
+                                            {lang === 'ar' ? 'دكتورة رائعة ومتفهمة جداً. أنصح بيها جداً.' : 'Amazing and understanding doctor. Highly recommended.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ padding: '15px 20px 25px', background: colors.card }}>
+                            <button style={{
+                                width: '100%',
+                                padding: '18px',
+                                background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                                border: 'none',
+                                borderRadius: '16px',
+                                color: '#fff',
+                                fontSize: '17px',
+                                fontWeight: '700',
+                                fontFamily: 'Tajawal, Poppins',
+                                cursor: 'pointer'
+                            }}>{t.bookAppointment}</button>
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Booking Screen
+        const BookingScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            const days = [
+                { day: t.sunday, date: '15', active: true },
+                { day: t.monday, date: '16' },
+                { day: t.tuesday, date: '17' },
+                { day: t.wednesday, date: '18' },
+                { day: t.thursday, date: '19' }
+            ];
+            
+            const times = ['9:00', '10:00', '11:00', '12:00', '1:00', '2:00', '3:00', '4:00'];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.card
+                    }}>
+                        <div style={{ 
+                            padding: '15px 20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                            borderBottom: `1px solid ${colors.primary}`
+                        }}>
+                            <span style={{ fontSize: '20px', color: colors.text }}>→</span>
+                            <h2 style={{ fontSize: '18px', color: colors.text }}>{t.bookAppointment}</h2>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            <div style={{
+                                display: 'flex',
+                                gap: '15px',
+                                padding: '15px',
+                                background: colors.pink,
+                                borderRadius: '18px',
+                                marginBottom: '25px'
+                            }}>
+                                <div style={{
+                                    width: '55px',
+                                    height: '55px',
+                                    borderRadius: '27px',
+                                    background: colors.card,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    fontSize: '28px'
+                                }}>👩‍⚕️</div>
+                                <div>
+                                    <h4 style={{ fontSize: '15px', color: colors.text, marginBottom: '4px' }}>{lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali'}</h4>
+                                    <p style={{ fontSize: '12px', color: colors.textLight }}>{t.gynecology}</p>
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginBottom: '25px' }}>
+                                <h3 style={{ fontSize: '15px', color: colors.text, marginBottom: '15px' }}>{t.selectDate}</h3>
+                                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>
+                                    {days.map((d, i) => (
+                                        <div key={i} style={{
+                                            minWidth: '60px',
+                                            padding: '12px 8px',
+                                            background: d.active ? colors.accent : colors.primary,
+                                            borderRadius: '14px',
+                                            textAlign: 'center'
+                                        }}>
+                                            <p style={{ 
+                                                fontSize: '11px', 
+                                                color: d.active ? 'rgba(255,255,255,0.8)' : colors.textLight,
+                                                marginBottom: '5px'
+                                            }}>{d.day}</p>
+                                            <p style={{ 
+                                                fontSize: '18px', 
+                                                fontWeight: '700',
+                                                color: d.active ? '#fff' : colors.text
+                                            }}>{d.date}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginBottom: '25px' }}>
+                                <h3 style={{ fontSize: '15px', color: colors.text, marginBottom: '15px' }}>{t.selectTime}</h3>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                    {times.map((time, i) => (
+                                        <div key={i} style={{
+                                            padding: '12px 16px',
+                                            background: i === 2 ? colors.accent : colors.primary,
+                                            borderRadius: '12px',
+                                            fontSize: '13px',
+                                            color: i === 2 ? '#fff' : colors.text
+                                        }}>{time} {lang === 'ar' ? (i < 3 ? 'ص' : 'م') : (i < 3 ? 'AM' : 'PM')}</div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 style={{ fontSize: '15px', color: colors.text, marginBottom: '15px' }}>{t.consultationType}</h3>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <div style={{
+                                        flex: 1,
+                                        padding: '18px',
+                                        background: colors.pink,
+                                        borderRadius: '16px',
+                                        textAlign: 'center',
+                                        border: `2px solid ${colors.accent}`
+                                    }}>
+                                        <span style={{ fontSize: '28px' }}>💬</span>
+                                        <p style={{ fontSize: '13px', color: colors.text, marginTop: '8px' }}>{t.chat}</p>
+                                    </div>
+                                    <div style={{
+                                        flex: 1,
+                                        padding: '18px',
+                                        background: colors.primary,
+                                        borderRadius: '16px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <span style={{ fontSize: '28px' }}>📹</span>
+                                        <p style={{ fontSize: '13px', color: colors.text, marginTop: '8px' }}>{t.video}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ padding: '15px 20px 25px' }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginBottom: '15px',
+                                padding: '15px',
+                                background: colors.primary,
+                                borderRadius: '14px'
+                            }}>
+                                <span style={{ fontSize: '14px', color: colors.textLight }}>{t.consultationFee}</span>
+                                <span style={{ fontSize: '16px', color: colors.text, fontWeight: '700' }}>250 {t.currency}</span>
+                            </div>
+                            <button style={{
+                                width: '100%',
+                                padding: '18px',
+                                background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                                border: 'none',
+                                borderRadius: '16px',
+                                color: '#fff',
+                                fontSize: '17px',
+                                fontWeight: '700',
+                                fontFamily: 'Tajawal, Poppins',
+                                cursor: 'pointer'
+                            }}>{t.confirmBooking}</button>
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Booking Success Screen
+        const BookingSuccessScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        background: colors.card,
+                        padding: '30px'
+                    }}>
+                        <div style={{
+                            width: '120px',
+                            height: '120px',
+                            borderRadius: '60px',
+                            background: colors.success,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginBottom: '30px',
+                            fontSize: '60px',
+                            color: '#fff'
+                        }}>✓</div>
+                        
+                        <h2 style={{ fontSize: '24px', color: colors.text, marginBottom: '10px', textAlign: 'center' }}>{t.bookingSuccess}</h2>
+                        <p style={{ fontSize: '14px', color: colors.textLight, textAlign: 'center', marginBottom: '30px', lineHeight: '1.8' }}>
+                            {t.appointmentConfirmed} {lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali'}
+                        </p>
+                        
+                        <div style={{
+                            width: '100%',
+                            padding: '20px',
+                            background: colors.pink,
+                            borderRadius: '20px',
+                            marginBottom: '30px'
+                        }}>
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                <div style={{
+                                    width: '60px',
+                                    height: '60px',
+                                    borderRadius: '30px',
+                                    background: colors.card,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    fontSize: '30px'
+                                }}>👩‍⚕️</div>
+                                <div>
+                                    <h4 style={{ fontSize: '16px', color: colors.text, marginBottom: '4px' }}>{lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali'}</h4>
+                                    <p style={{ fontSize: '13px', color: colors.textLight }}>{t.gynecology}</p>
+                                </div>
+                            </div>
+                            
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '15px', 
+                                marginTop: '15px',
+                                padding: '12px',
+                                background: colors.card,
+                                borderRadius: '12px'
+                            }}>
+                                <div style={{ flex: 1, textAlign: 'center' }}>
+                                    <p style={{ fontSize: '11px', color: colors.textLight, marginBottom: '4px' }}>{lang === 'ar' ? 'التاريخ' : 'Date'}</p>
+                                    <p style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>{lang === 'ar' ? '15 يناير' : 'Jan 15'}</p>
+                                </div>
+                                <div style={{ width: '1px', background: colors.primary }}></div>
+                                <div style={{ flex: 1, textAlign: 'center' }}>
+                                    <p style={{ fontSize: '11px', color: colors.textLight, marginBottom: '4px' }}>{lang === 'ar' ? 'الوقت' : 'Time'}</p>
+                                    <p style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>10:00 {lang === 'ar' ? 'ص' : 'AM'}</p>
+                                </div>
+                                <div style={{ width: '1px', background: colors.primary }}></div>
+                                <div style={{ flex: 1, textAlign: 'center' }}>
+                                    <p style={{ fontSize: '11px', color: colors.textLight, marginBottom: '4px' }}>{lang === 'ar' ? 'النوع' : 'Type'}</p>
+                                    <p style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>{t.chat}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '18px',
+                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accentDark} 100%)`,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#fff',
+                            fontSize: '17px',
+                            fontWeight: '700',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer',
+                            marginBottom: '12px'
+                        }}>{t.viewDetails}</button>
+                        
+                        <button style={{
+                            width: '100%',
+                            padding: '16px',
+                            background: colors.primary,
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: colors.text,
+                            fontSize: '15px',
+                            fontFamily: 'Tajawal, Poppins',
+                            cursor: 'pointer'
+                        }}>{t.backHome}</button>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Chat Screen
+        const ChatScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.background
+                    }}>
+                        <div style={{ 
+                            padding: '15px 20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            background: colors.card,
+                            boxShadow: `0 2px 10px ${colors.shadow}`
+                        }}>
+                            <span style={{ fontSize: '20px', color: colors.text }}>→</span>
+                            <div style={{
+                                width: '45px',
+                                height: '45px',
+                                borderRadius: '22px',
+                                background: colors.pink,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                fontSize: '22px'
+                            }}>👩‍⚕️</div>
+                            <div style={{ flex: 1 }}>
+                                <h4 style={{ fontSize: '15px', color: colors.text }}>{lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali'}</h4>
+                                <p style={{ fontSize: '11px', color: colors.success }}>● {t.online}</p>
+                            </div>
+                            <span style={{ fontSize: '20px' }}>📞</span>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            {/* Doctor Message */}
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                                <div style={{
+                                    width: '35px',
+                                    height: '35px',
+                                    borderRadius: '17px',
+                                    background: colors.pink,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    fontSize: '18px'
+                                }}>👩‍⚕️</div>
+                                <div style={{
+                                    maxWidth: '70%',
+                                    padding: '14px 18px',
+                                    background: colors.card,
+                                    borderRadius: '18px 18px 18px 4px',
+                                    boxShadow: `0 2px 10px ${colors.shadow}`
+                                }}>
+                                    <p style={{ fontSize: '14px', color: colors.text, lineHeight: '1.7' }}>
+                                        {lang === 'ar' ? 'أهلاً وسهلاً بيكي 🌸 إزيك النهاردة؟ عايزة تستشيريني في إيه؟' : 'Hello and welcome 🌸 How are you today? What would you like to consult about?'}
+                                    </p>
+                                    <span style={{ fontSize: '10px', color: colors.textLight }}>10:30 {lang === 'ar' ? 'ص' : 'AM'}</span>
+                                </div>
+                            </div>
+                            
+                            {/* Patient Message */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                                <div style={{
+                                    maxWidth: '70%',
+                                    padding: '14px 18px',
+                                    background: colors.accent,
+                                    borderRadius: '18px 18px 4px 18px'
+                                }}>
+                                    <p style={{ fontSize: '14px', color: '#fff', lineHeight: '1.7' }}>
+                                        {lang === 'ar' ? 'أهلاً يا دكتورة، عندي سؤال عن آلام الضهر في الحمل' : 'Hello doctor, I have a question about back pain during pregnancy'}
+                                    </p>
+                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>10:32 {lang === 'ar' ? 'ص' : 'AM'}</span>
+                                </div>
+                            </div>
+                            
+                            {/* Doctor Response */}
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                                <div style={{
+                                    width: '35px',
+                                    height: '35px',
+                                    borderRadius: '17px',
+                                    background: colors.pink,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    fontSize: '18px'
+                                }}>👩‍⚕️</div>
+                                <div style={{
+                                    maxWidth: '70%',
+                                    padding: '14px 18px',
+                                    background: colors.card,
+                                    borderRadius: '18px 18px 18px 4px',
+                                    boxShadow: `0 2px 10px ${colors.shadow}`
+                                }}>
+                                    <p style={{ fontSize: '14px', color: colors.text, lineHeight: '1.7' }}>
+                                        {lang === 'ar' ? 'أكيد! ده شائع جداً. ممكن تقوليلي انتي في أنهي شهر؟ والألم مستمر ولا بييجي ويروح؟' : 'Of course! This is very common. Can you tell me which month are you in? And is the pain constant or does it come and go?'}
+                                    </p>
+                                    <span style={{ fontSize: '10px', color: colors.textLight }}>10:33 {lang === 'ar' ? 'ص' : 'AM'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ 
+                            padding: '15px 20px 25px',
+                            background: colors.card,
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'center'
+                        }}>
+                            <span style={{ fontSize: '22px' }}>📎</span>
+                            <div style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '12px 18px',
+                                background: colors.primary,
+                                borderRadius: '25px'
+                            }}>
+                                <input 
+                                    placeholder={t.typeMessage}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        flex: 1,
+                                        fontSize: '14px',
+                                        fontFamily: 'Tajawal, Poppins',
+                                        outline: 'none',
+                                        color: colors.text
+                                    }}
+                                />
+                            </div>
+                            <div style={{
+                                width: '45px',
+                                height: '45px',
+                                borderRadius: '22px',
+                                background: colors.accent,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                                <span style={{ fontSize: '18px' }}>📤</span>
+                            </div>
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Appointments Screen
+        const AppointmentsScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            const appointments = [
+                { name: lang === 'ar' ? 'د. نورة العلي' : 'Dr. Noura Ali', spec: t.gynecology, date: lang === 'ar' ? '15 يناير' : 'Jan 15', time: '10:00', type: t.chat },
+                { name: lang === 'ar' ? 'د. هند السعيد' : 'Dr. Hind Said', spec: t.psychology, date: lang === 'ar' ? '18 يناير' : 'Jan 18', time: '2:00', type: t.video },
+                { name: lang === 'ar' ? 'د. سمر الخالد' : 'Dr. Samar Khaled', spec: t.dermatology, date: lang === 'ar' ? '22 يناير' : 'Jan 22', time: '11:30', type: t.chat }
+            ];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.background
+                    }}>
+                        <div style={{ 
+                            padding: '20px',
+                            background: colors.card,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px'
+                        }}>
+                            <span style={{ fontSize: '20px', color: colors.text }}>→</span>
+                            <h2 style={{ fontSize: '18px', color: colors.text, flex: 1 }}>{t.myAppointments}</h2>
+                        </div>
+                        
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '10px', 
+                            padding: '15px 20px',
+                            background: colors.card
+                        }}>
+                            {[t.upcoming, t.past, t.cancelled].map((tab, i) => (
+                                <div key={i} style={{
+                                    flex: 1,
+                                    padding: '12px',
+                                    background: i === 0 ? colors.accent : colors.primary,
+                                    borderRadius: '12px',
+                                    textAlign: 'center',
+                                    color: i === 0 ? '#fff' : colors.textLight,
+                                    fontSize: '13px',
+                                    fontWeight: i === 0 ? '600' : '400'
+                                }}>{tab}</div>
+                            ))}
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            {appointments.map((apt, i) => (
+                                <div key={i} style={{
+                                    padding: '18px',
+                                    background: colors.card,
+                                    borderRadius: '20px',
+                                    marginBottom: '15px',
+                                    boxShadow: `0 4px 15px ${colors.shadow}`
+                                }}>
+                                    <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                                        <div style={{
+                                            width: '55px',
+                                            height: '55px',
+                                            borderRadius: '27px',
+                                            background: colors.pink,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            fontSize: '28px'
+                                        }}>👩‍⚕️</div>
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ fontSize: '15px', color: colors.text, marginBottom: '4px' }}>{apt.name}</h4>
+                                            <p style={{ fontSize: '12px', color: colors.textLight }}>{apt.spec}</p>
+                                        </div>
+                                        <span style={{
+                                            padding: '6px 12px',
+                                            background: colors.pink,
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
+                                            color: colors.accent,
+                                            height: 'fit-content'
+                                        }}>{apt.type}</span>
+                                    </div>
+                                    
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '20px',
+                                        padding: '12px 15px',
+                                        background: colors.background,
+                                        borderRadius: '12px',
+                                        marginBottom: '15px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>📅</span>
+                                            <span style={{ fontSize: '12px', color: colors.text }}>{apt.date}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>🕐</span>
+                                            <span style={{ fontSize: '12px', color: colors.text }}>{apt.time} {lang === 'ar' ? 'ص' : 'AM'}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            background: colors.primary,
+                                            border: 'none',
+                                            borderRadius: '12px',
+                                            color: colors.text,
+                                            fontSize: '13px',
+                                            fontFamily: 'Tajawal, Poppins',
+                                            cursor: 'pointer'
+                                        }}>{t.cancel}</button>
+                                        <button style={{
+                                            flex: 1,
+                                            padding: '12px',
+                                            background: colors.accent,
+                                            border: 'none',
+                                            borderRadius: '12px',
+                                            color: '#fff',
+                                            fontSize: '13px',
+                                            fontFamily: 'Tajawal, Poppins',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}>{t.startChat}</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {/* Bottom Navigation */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-around',
+                            padding: '15px 20px 25px',
+                            background: colors.navBg,
+                            borderRadius: '25px 25px 0 0',
+                            boxShadow: `0 -5px 20px ${colors.shadow}`
+                        }}>
+                            {[
+                                { icon: '🏠', label: t.home },
+                                { icon: '📅', label: t.appointments, active: true },
+                                { icon: '💬', label: t.messages },
+                                { icon: '👤', label: t.profile }
+                            ].map((item, i) => (
+                                <div key={i} style={{ textAlign: 'center' }}>
+                                    <div style={{
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '15px',
+                                        background: item.active ? colors.accent : 'transparent',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        margin: '0 auto 5px',
+                                        fontSize: '20px'
+                                    }}>{item.icon}</div>
+                                    <span style={{ 
+                                        fontSize: '10px', 
+                                        color: item.active ? colors.accent : colors.textLight 
+                                    }}>{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Profile Screen
+        const ProfileScreen = () => {
+            const { theme } = useContext(ThemeContext);
+            const { lang, t } = useContext(LangContext);
+            const colors = themes[theme];
+            
+            const menuItems1 = [
+                { icon: '📋', label: t.medicalHistory },
+                { icon: '💊', label: t.medications },
+                { icon: '📄', label: t.medicalReports },
+                { icon: '❤️', label: t.favoriteDoctors }
+            ];
+            
+            const menuItems2 = [
+                { icon: '🔔', label: t.notifications },
+                { icon: '🌙', label: t.appearance },
+                { icon: '🔒', label: t.privacySecurity },
+                { icon: '❓', label: t.help }
+            ];
+            
+            return (
+                <PhoneFrame>
+                    <div style={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        background: colors.background
+                    }}>
+                        <div style={{ 
+                            padding: '30px 20px',
+                            background: colors.card,
+                            borderRadius: '0 0 30px 30px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{
+                                width: '90px',
+                                height: '90px',
+                                borderRadius: '45px',
+                                background: colors.pink,
+                                margin: '0 auto 15px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                fontSize: '45px',
+                                border: `3px solid ${colors.accent}`
+                            }}>👤</div>
+                            <h2 style={{ fontSize: '20px', color: colors.text, marginBottom: '5px' }}>{lang === 'ar' ? 'منة ماهر' : 'Sara Ahmed'}</h2>
+                            <p style={{ fontSize: '13px', color: colors.textLight }}>sara.ahmed@email.com</p>
+                            <button style={{
+                                marginTop: '15px',
+                                padding: '10px 25px',
+                                background: colors.pink,
+                                border: 'none',
+                                borderRadius: '20px',
+                                color: colors.accent,
+                                fontSize: '13px',
+                                fontFamily: 'Tajawal, Poppins',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                            }}>{t.editProfile}</button>
+                        </div>
+                        
+                        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+                            <div style={{
+                                background: colors.card,
+                                borderRadius: '20px',
+                                padding: '8px',
+                                marginBottom: '15px'
+                            }}>
+                                {menuItems1.map((item, i) => (
+                                    <div key={i} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        padding: '15px',
+                                        borderBottom: i < menuItems1.length - 1 ? `1px solid ${colors.primary}` : 'none'
+                                    }}>
+                                        <div style={{
+                                            width: '42px',
+                                            height: '42px',
+                                            borderRadius: '12px',
+                                            background: colors.pink,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            fontSize: '20px'
+                                        }}>{item.icon}</div>
+                                        <span style={{ flex: 1, fontSize: '14px', color: colors.text }}>{item.label}</span>
+                                        <span style={{ fontSize: '18px', color: colors.textLight }}>←</span>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div style={{
+                                background: colors.card,
+                                borderRadius: '20px',
+                                padding: '8px'
+                            }}>
+                                {menuItems2.map((item, i) => (
+                                    <div key={i} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        padding: '15px',
+                                        borderBottom: i < menuItems2.length - 1 ? `1px solid ${colors.primary}` : 'none'
+                                    }}>
+                                        <div style={{
+                                            width: '42px',
+                                            height: '42px',
+                                            borderRadius: '12px',
+                                            background: colors.primary,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            fontSize: '20px'
+                                        }}>{item.icon}</div>
+                                        <span style={{ flex: 1, fontSize: '14px', color: colors.text }}>{item.label}</span>
+                                        <span style={{ fontSize: '18px', color: colors.textLight }}>←</span>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <button style={{
+                                width: '100%',
+                                marginTop: '20px',
+                                padding: '15px',
+                                background: colors.card,
+                                border: 'none',
+                                borderRadius: '15px',
+                                color: '#E57373',
+                                fontSize: '14px',
+                                fontFamily: 'Tajawal, Poppins',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '10px'
+                            }}>
+                                <span>🚪</span>
+                                {t.logout}
+                            </button>
+                        </div>
+                        
+                        {/* Bottom Navigation */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-around',
+                            padding: '15px 20px 25px',
+                            background: colors.navBg,
+                            borderRadius: '25px 25px 0 0',
+                            boxShadow: `0 -5px 20px ${colors.shadow}`
+                        }}>
+                            {[
+                                { icon: '🏠', label: t.home },
+                                { icon: '📅', label: t.appointments },
+                                { icon: '💬', label: t.messages },
+                                { icon: '👤', label: t.profile, active: true }
+                            ].map((item, i) => (
+                                <div key={i} style={{ textAlign: 'center' }}>
+                                    <div style={{
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '15px',
+                                        background: item.active ? colors.accent : 'transparent',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        margin: '0 auto 5px',
+                                        fontSize: '20px'
+                                    }}>{item.icon}</div>
+                                    <span style={{ 
+                                        fontSize: '10px', 
+                                        color: item.active ? colors.accent : colors.textLight 
+                                    }}>{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </PhoneFrame>
+            );
+        };
+        
+        // Main App
+        const App = () => {
+            const [theme, setTheme] = useState('light');
+            const [lang, setLang] = useState('ar');
+            
+            const t = translations[lang];
+            
+            // Update body class
+            React.useEffect(() => {
+                document.body.className = theme;
+                document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                document.documentElement.lang = lang;
+            }, [theme, lang]);
+            
+            const screens = [
+                { component: <SplashScreen />, label: lang === 'ar' ? 'شاشة البداية' : 'Splash Screen' },
+                { component: <OnboardingScreen />, label: lang === 'ar' ? 'التعريف' : 'Onboarding' },
+                { component: <RoleSelectionScreen />, label: lang === 'ar' ? 'اختيار الدور' : 'Role Selection' },
+                { component: <LoginScreen />, label: lang === 'ar' ? 'تسجيل الدخول' : 'Login' },
+                { component: <RegisterScreen />, label: lang === 'ar' ? 'إنشاء حساب' : 'Register' },
+                { component: <PatientHomeScreen />, label: lang === 'ar' ? 'الرئيسية' : 'Home' },
+                { component: <DoctorProfileScreen />, label: lang === 'ar' ? 'ملف الدكتورة' : 'Doctor Profile' },
+                { component: <BookingScreen />, label: lang === 'ar' ? 'حجز موعد' : 'Booking' },
+                { component: <BookingSuccessScreen />, label: lang === 'ar' ? 'تأكيد الحجز' : 'Booking Success' },
+                { component: <ChatScreen />, label: lang === 'ar' ? 'المحادثة' : 'Chat' },
+                { component: <AppointmentsScreen />, label: lang === 'ar' ? 'المواعيد' : 'Appointments' },
+                { component: <ProfileScreen />, label: lang === 'ar' ? 'الملف الشخصي' : 'Profile' },
+            ];
+            
+            return (
+                <ThemeContext.Provider value={{ theme }}>
+                    <LangContext.Provider value={{ lang, t }}>
+                        <div>
+                            <h1>🌸 {t.appName} - {t.appNameEn}</h1>
+                            <p className="subtitle">{t.patientUI} <span className="badge patient">Patient</span></p>
+                            
+                            <div className="controls">
+                                <button 
+                                    className={`control-btn ${lang === 'ar' ? 'active' : ''}`}
+                                    onClick={() => setLang('ar')}
+                                >
+                                    🇪🇬 مصري
+                                </button>
+                                <button 
+                                    className={`control-btn ${lang === 'en' ? 'active' : ''}`}
+                                    onClick={() => setLang('en')}
+                                >
+                                    🇬🇧 English
+                                </button>
+                                <div style={{ width: '2px', background: theme === 'light' ? '#EDE4D3' : '#2d2d44', margin: '0 10px' }}></div>
+                                <button 
+                                    className={`control-btn ${theme === 'light' ? 'active' : ''}`}
+                                    onClick={() => setTheme('light')}
+                                >
+                                    ☀️ Light
+                                </button>
+                                <button 
+                                    className={`control-btn ${theme === 'dark' ? 'active' : ''}`}
+                                    onClick={() => setTheme('dark')}
+                                >
+                                    🌙 Dark
+                                </button>
+                            </div>
+                            
+                            <div className="screen-grid">
+                                {screens.map((screen, i) => (
+                                    <div key={i} className="screen-wrapper">
+                                        <span className="screen-label">{screen.label}</span>
+                                        {screen.component}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </LangContext.Provider>
+                </ThemeContext.Provider>
+            );
+        };
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
