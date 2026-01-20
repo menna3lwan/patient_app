@@ -1,4 +1,4 @@
-# Count Dart files normally
+# Count Dart normally
 *.dart linguist-language=Dart
 
 # Exclude platform folders from language stats
