@@ -1,0 +1,9 @@
+# تجاهل كل شيء
+*
+
+# استثناءات
+!lib/
+!lib/**
+!.gitattributes
+!.gitignore
+!README.md
