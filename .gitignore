@@ -1,9 +1,23 @@
-# تجاهل كل شيء
-*
+# Flutter ignores (طبيعي)
+.dart_tool/
+.build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
 
-# استثناءات
-!lib/
-!lib/**
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# IMPORTANT: allow these files
 !.gitattributes
 !.gitignore
 !README.md

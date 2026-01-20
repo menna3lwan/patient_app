@@ -1,2 +1,7 @@
-* linguist-language=Dart
-* linguist-language=Dart
+# Count Dart files normally
+*.dart linguist-language=Dart
+
+# Exclude platform folders from language stats
+android/** linguist-vendored
+ios/** linguist-vendored
+build/** linguist-vendored
