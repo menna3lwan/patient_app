@@ -42,6 +42,16 @@ class AppRoutes {
     
     return GoRouter(
       initialLocation: authProvider.isLoggedIn ? main : onboarding,
+      refreshListenable: authProvider,
+      redirect: (context, state) {
+        final isLoggedIn = authProvider.isLoggedIn;
+        final isAuthRoute = state.matchedLocation == onboarding ||
+                            state.matchedLocation == login ||
+                            state.matchedLocation == register;
+        if (!isLoggedIn && !isAuthRoute) return onboarding;
+        if (isLoggedIn && isAuthRoute) return main;
+        return null;
+      },
       routes: [
         GoRoute(path: onboarding, builder: (_, __) => const OnboardingScreen()),
         GoRoute(path: login, builder: (_, __) => const LoginScreen()),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'config/theme.dart';
+import 'package:shared_ui/shared_ui.dart';
 import 'config/locale.dart';
 import 'config/providers.dart';
 import 'config/routes.dart';

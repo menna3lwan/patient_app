@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
-import '../../config/theme.dart';
+import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
 import '../../config/providers.dart';
 
