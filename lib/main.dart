@@ -9,6 +9,12 @@ import 'config/routes.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('Global Error Caught: ${details.exception}');
+  };
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(const HenLehenPatientApp());
 }

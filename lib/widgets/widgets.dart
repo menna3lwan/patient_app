@@ -1,52 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_ui/shared_ui.dart';
 
-class AppButton extends StatelessWidget {
-  final String text;
-  final VoidCallback? onPressed;
-  final bool isLoading, isOutlined, isFullWidth;
-  final Color? color;
-  final IconData? icon;
-  final double height;
 
-  const AppButton({super.key, required this.text, this.onPressed, this.isLoading = false, this.isOutlined = false, this.isFullWidth = true, this.color, this.icon, this.height = 52});
 
-  @override
-  Widget build(BuildContext context) {
-    final btnColor = color ?? AppColors.primary;
-    Widget child = isLoading ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: isOutlined ? btnColor : Colors.white)) : Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)], Text(text)]);
-    if (isOutlined) return SizedBox(width: isFullWidth ? double.infinity : null, height: height, child: OutlinedButton(onPressed: isLoading ? null : onPressed, style: OutlinedButton.styleFrom(foregroundColor: btnColor, side: BorderSide(color: btnColor, width: 1.5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: child));
-    return SizedBox(width: isFullWidth ? double.infinity : null, height: height, child: ElevatedButton(onPressed: isLoading ? null : onPressed, style: ElevatedButton.styleFrom(backgroundColor: btnColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 2, shadowColor: btnColor.withOpacity(0.3)), child: child));
-  }
-}
-
-class AppTextField extends StatefulWidget {
-  final TextEditingController? controller;
-  final String? label, hint;
-  final bool obscureText, showPasswordToggle, enabled, readOnly;
-  final TextInputType? keyboardType;
-  final Widget? prefixIcon, suffixIcon;
-  final String? Function(String?)? validator;
-  final int maxLines;
-  final void Function(String)? onChanged, onSubmitted;
-  final VoidCallback? onTap;
-  final TextInputAction? textInputAction;
-
-  const AppTextField({super.key, this.controller, this.label, this.hint, this.obscureText = false, this.showPasswordToggle = false, this.keyboardType, this.prefixIcon, this.suffixIcon, this.validator, this.maxLines = 1, this.onChanged, this.onSubmitted, this.enabled = true, this.readOnly = false, this.onTap, this.textInputAction});
-
-  @override
-  State<AppTextField> createState() => _AppTextFieldState();
-}
-
-class _AppTextFieldState extends State<AppTextField> {
-  bool _obscureText = true;
-  @override
-  void initState() { super.initState(); _obscureText = widget.obscureText; }
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(controller: widget.controller, obscureText: widget.showPasswordToggle ? _obscureText : widget.obscureText, keyboardType: widget.keyboardType, maxLines: widget.obscureText ? 1 : widget.maxLines, onChanged: widget.onChanged, onFieldSubmitted: widget.onSubmitted, enabled: widget.enabled, readOnly: widget.readOnly, onTap: widget.onTap, textInputAction: widget.textInputAction, decoration: InputDecoration(labelText: widget.label, hintText: widget.hint, prefixIcon: widget.prefixIcon, suffixIcon: widget.showPasswordToggle ? IconButton(icon: Icon(_obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textSecondaryLight), onPressed: () => setState(() => _obscureText = !_obscureText)) : widget.suffixIcon), validator: widget.validator);
-  }
-}
 
 class DoctorCard extends StatelessWidget {
   final String name, specialty;

@@ -5,6 +5,7 @@ import 'package:provider/single_child_widget.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'locale.dart';
 import '../models/models.dart';
+import '../repositories/auth_repository.dart';
 
 class AppProviders {
   static List<SingleChildWidget> get providers => [
@@ -54,14 +55,16 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
 
-    _user = UserModel(
-      id: 'p1',
-      name: 'منة علوان',
-      email: email,
-      phone: '01012345678',
-      governorate: 'القاهرة',
-      bloodType: 'A+',
-    );
+    // Using AuthRepository instead of mock
+    final authRepo = AuthRepository();
+    _user = await authRepo.login(email, password);
+    
+    if (_user == null) {
+      _error = 'بيانات الدخول غير صحيحة';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
 
     _isLoggedIn = true;
     _isLoading = false;
