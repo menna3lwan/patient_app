@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -15,7 +14,7 @@ class AppointmentsTab extends StatefulWidget {
 
 class _AppointmentsTabState extends State<AppointmentsTab> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   @override
   void initState() { super.initState(); _tabController = TabController(length: 3, vsync: this); }
   @override
@@ -23,8 +22,8 @@ class _AppointmentsTabState extends State<AppointmentsTab> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final appointments = Provider.of<AppointmentsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final appointments = Get.find<AppointmentsController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -48,9 +47,9 @@ class _AppointmentsTabState extends State<AppointmentsTab> with SingleTickerProv
             emptyTitle: locale.get('noAppointments'),
             emptySubtitle: locale.get('searchDoctors'),
             emptyButtonText: locale.get('topDoctors'),
-            onEmptyButtonPressed: () => context.push('/search'),
+            onEmptyButtonPressed: () => Get.toNamed('/search'),
             onCancel: (id) => _showCancelDialog(context, id, appointments, locale),
-            onStart: (id) => context.push('/chat/$id'),
+            onStart: (id) => Get.toNamed('/chat/$id'),
           ),
           // Completed
           _AppointmentList(
@@ -69,7 +68,7 @@ class _AppointmentsTabState extends State<AppointmentsTab> with SingleTickerProv
     );
   }
 
-  void _showCancelDialog(BuildContext context, String id, AppointmentsProvider provider, LocaleProvider locale) {
+  void _showCancelDialog(BuildContext context, String id, AppointmentsController provider, LocaleController locale) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -115,7 +114,7 @@ class _AppointmentList extends StatelessWidget {
           time: apt.time,
           type: apt.type,
           status: apt.status,
-          onTap: () => context.push('/appointment/${apt.id}'),
+          onTap: () => Get.toNamed('/appointment/${apt.id}'),
           onCancel: onCancel != null ? () => onCancel!(apt.id) : null,
           onStart: onStart != null && apt.status == 'confirmed' ? () => onStart!(apt.id) : null,
         );

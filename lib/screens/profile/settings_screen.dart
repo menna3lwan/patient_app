@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -10,12 +9,12 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final theme = Get.find<ThemeController>();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('settings')),
       ),
       body: ListView(
@@ -23,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _SettingsSection(title: locale.get('appearance'), children: [
             _SettingsItem(icon: Iconsax.sun_1, title: locale.get('darkMode'), trailing: Switch(value: theme.isDark, onChanged: (_) => theme.toggleTheme(), activeColor: AppColors.primary)),
-            _SettingsItem(icon: Iconsax.language_circle, title: locale.get('language'), trailing: DropdownButton<bool>(value: locale.isArabic, underline: const SizedBox(), items: const [DropdownMenuItem(value: true, child: Text('العربية')), DropdownMenuItem(value: false, child: Text('English'))], onChanged: (v) { if (v == true) locale.setArabic(); else locale.setEnglish(); })),
+            _SettingsItem(icon: Iconsax.language_circle, title: locale.get('language'), trailing: DropdownButton<bool>(value: locale.isArabic.value, underline: const SizedBox(), items: const [DropdownMenuItem(value: true, child: Text('العربية')), DropdownMenuItem(value: false, child: Text('English'))], onChanged: (v) { if (v == true) locale.setArabic(); else locale.setEnglish(); })),
           ]),
           const SizedBox(height: 20),
           _SettingsSection(title: locale.get('notifications'), children: [

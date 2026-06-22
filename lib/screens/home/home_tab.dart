@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -13,11 +12,11 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
-    final doctors = Provider.of<DoctorsProvider>(context);
-    final favorites = Provider.of<FavoritesProvider>(context);
-    final notifications = Provider.of<NotificationsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final auth = Get.find<AuthController>();
+    final doctors = Get.find<DoctorsController>();
+    final favorites = Get.find<FavoritesController>();
+    final notifications = Get.find<NotificationsController>();
 
     return Scaffold(
       body: SafeArea(
@@ -36,7 +35,7 @@ class HomeTab extends StatelessWidget {
                         gradient: AppColors.primaryGradient,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Center(child: Text(auth.user?.name.isNotEmpty == true ? auth.user!.name[0] : '👩', style: const TextStyle(fontSize: 24, color: Colors.white))),
+                      child: Center(child: Text(auth.user.value?.name.isNotEmpty == true ? auth.user.value!.name[0] : '👩', style: const TextStyle(fontSize: 24, color: Colors.white))),
                     ),
                     const SizedBox(width: 14),
                     // Greeting
@@ -44,7 +43,7 @@ class HomeTab extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${locale.get('hello')}، ${auth.user?.name.split(' ').first ?? locale.get('guest')} 👋', style: Theme.of(context).textTheme.titleLarge),
+                          Text('${locale.get('hello')}، ${auth.user.value?.name.split(' ').first ?? locale.get('guest')} 👋', style: Theme.of(context).textTheme.titleLarge),
                           const SizedBox(height: 2),
                           Text(locale.get('howAreYou'), style: Theme.of(context).textTheme.bodySmall),
                         ],
@@ -55,13 +54,13 @@ class HomeTab extends StatelessWidget {
                       children: [
                         IconButton(
                           icon: const Icon(Iconsax.notification),
-                          onPressed: () => context.push('/notifications'),
+                          onPressed: () => Get.toNamed('/notifications'),
                         ),
                         if (notifications.hasUnread) Positioned(top: 8, right: 8, child: Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle))),
                       ],
                     ),
                     // Favorites
-                    IconButton(icon: const Icon(Iconsax.heart), onPressed: () => context.push('/favorites')),
+                    IconButton(icon: const Icon(Iconsax.heart), onPressed: () => Get.toNamed('/favorites')),
                   ],
                 ),
               ),
@@ -71,7 +70,7 @@ class HomeTab extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: GestureDetector(
-                  onTap: () => context.push('/search'),
+                  onTap: () => Get.toNamed('/search'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
@@ -88,7 +87,7 @@ class HomeTab extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-                child: SectionHeader(title: locale.get('specialties'), actionText: locale.get('seeAll'), onActionPressed: () => context.push('/search')),
+                child: SectionHeader(title: locale.get('specialties'), actionText: locale.get('seeAll'), onActionPressed: () => Get.toNamed('/search')),
               ),
             ),
             SliverToBoxAdapter(
@@ -102,10 +101,10 @@ class HomeTab extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final specialty = MockData.specialties[index];
                     return SpecialtyCard(
-                      name: locale.isArabic ? specialty.nameAr : specialty.nameEn,
+                      name: locale.isArabic.value ? specialty.nameAr : specialty.nameEn,
                       icon: specialty.icon,
                       color: Color(specialty.color),
-                      onTap: () => context.push('/search?specialty=${specialty.id}'),
+                      onTap: () => Get.toNamed('/search?specialty=${specialty.id}'),
                     );
                   },
                 ),
@@ -115,7 +114,7 @@ class HomeTab extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-                child: SectionHeader(title: locale.get('topDoctors'), actionText: locale.get('seeAll'), onActionPressed: () => context.push('/search')),
+                child: SectionHeader(title: locale.get('topDoctors'), actionText: locale.get('seeAll'), onActionPressed: () => Get.toNamed('/search')),
               ),
             ),
             SliverPadding(
@@ -133,7 +132,7 @@ class HomeTab extends StatelessWidget {
                       fee: doctor.consultationFee,
                       isOnline: doctor.isOnline,
                       isFavorite: favorites.isFavorite(doctor.id),
-                      onTap: () => context.push('/doctor/${doctor.id}'),
+                      onTap: () => Get.toNamed('/doctor/${doctor.id}'),
                       onFavoritePressed: () => favorites.toggleFavorite(doctor.id),
                     );
                   },

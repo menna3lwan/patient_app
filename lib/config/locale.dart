@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-class LocaleProvider extends ChangeNotifier {
-  bool _isArabic = true;
-  bool get isArabic => _isArabic;
-  Locale get locale => _isArabic ? const Locale('ar') : const Locale('en');
+class LocaleController extends GetxController {
+  final isArabic = true.obs;
+
+  Locale get locale => isArabic.value ? const Locale('ar') : const Locale('en');
   TextDirection get textDirection =>
-      _isArabic ? TextDirection.rtl : TextDirection.ltr;
+      isArabic.value ? TextDirection.rtl : TextDirection.ltr;
+
   void setArabic() {
-    _isArabic = true;
-    notifyListeners();
+    isArabic.value = true;
   }
 
   void setEnglish() {
-    _isArabic = false;
-    notifyListeners();
+    isArabic.value = false;
   }
 
   void toggle() {
-    _isArabic = !_isArabic;
-    notifyListeners();
+    isArabic.value = !isArabic.value;
   }
 
-  String get(String key) => _isArabic ? (_ar[key] ?? key) : (_en[key] ?? key);
+  String get(String key) => isArabic.value ? (_ar[key] ?? key) : (_en[key] ?? key);
 
   static const Map<String, String> _ar = {
     'appName': 'هُنَّ لَهُنَّ',

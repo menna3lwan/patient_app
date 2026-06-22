@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -34,8 +33,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final appointments = Provider.of<AppointmentsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final appointments = Get.find<AppointmentsController>();
     final apt = appointments.getAppointmentById(widget.appointmentId);
 
     if (apt == null) {
@@ -44,7 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Row(children: [
           CircleAvatar(radius: 18, backgroundColor: AppColors.primaryLight, child: Text(apt.doctor.name.length > 3 ? apt.doctor.name[3] : apt.doctor.name[0], style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 14))),
           const SizedBox(width: 10),

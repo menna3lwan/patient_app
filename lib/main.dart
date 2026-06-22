@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:shared_ui/shared_ui.dart';
 import 'config/locale.dart';
-import 'config/providers.dart';
+import 'config/bindings.dart';
 import 'config/routes.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     debugPrint('Global Error Caught: ${details.exception}');
@@ -24,33 +24,36 @@ class HenLehenPatientApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: AppProviders.providers,
-      child: Consumer2<ThemeProvider, LocaleProvider>(
-        builder: (context, themeProvider, localeProvider, _) {
-          return MaterialApp.router(
-            title: localeProvider.get('appName'),
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.themeMode,
-            locale: localeProvider.locale,
-            supportedLocales: const [Locale('ar'), Locale('en')],
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            routerConfig: AppRoutes.router(context),
-            builder: (context, child) {
-              return Directionality(
-                textDirection: localeProvider.textDirection,
-                child: child!,
-              );
-            },
+    return GetMaterialApp(
+      title: 'هُنَّ لَهُنَّ',
+      debugShowCheckedModeBanner: false,
+      initialBinding: InitialBinding(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      getPages: AppRoutes.pages,
+      initialRoute: AppRoutes.onboarding,
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      builder: (context, child) {
+        final themeCtrl = Get.find<ThemeController>();
+        final localeCtrl = Get.find<LocaleController>();
+        return Obx(() {
+          // Access reactive values to trigger rebuild
+          final _ = themeCtrl.themeMode.value;
+          final __ = localeCtrl.isArabic.value;
+          return Directionality(
+            textDirection: localeCtrl.textDirection,
+            child: Theme(
+              data: themeCtrl.isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
+              child: child!,
+            ),
           );
-        },
-      ),
+        });
+      },
     );
   }
 }

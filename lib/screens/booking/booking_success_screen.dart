@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -13,8 +12,8 @@ class BookingSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final appointments = Provider.of<AppointmentsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final appointments = Get.find<AppointmentsController>();
     final apt = appointments.getAppointmentById(appointmentId);
 
     return Scaffold(
@@ -61,9 +60,9 @@ class BookingSuccessScreen extends StatelessWidget {
               ),
               const Spacer(),
               // Buttons
-              AppButton(text: locale.get('myAppointments'), onPressed: () => context.go('/')),
+              AppButton(text: locale.get('myAppointments'), onPressed: () => Get.offAllNamed('/')),
               const SizedBox(height: 12),
-              AppButton(text: locale.get('home'), onPressed: () => context.go('/'), isOutlined: true),
+              AppButton(text: locale.get('home'), onPressed: () => Get.offAllNamed('/'), isOutlined: true),
             ],
           ),
         ),

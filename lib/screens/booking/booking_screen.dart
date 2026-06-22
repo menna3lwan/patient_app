@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -19,14 +18,14 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => Provider.of<BookingProvider>(context, listen: false).reset());
+    WidgetsBinding.instance.addPostFrameCallback((_) => Get.find<BookingController>().reset());
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final doctors = Provider.of<DoctorsProvider>(context);
-    final booking = Provider.of<BookingProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final doctors = Get.find<DoctorsController>();
+    final booking = Get.find<BookingController>();
     final doctor = doctors.getDoctorById(widget.doctorId);
 
     if (doctor == null) {
@@ -35,7 +34,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('bookAppointment')),
       ),
       body: SingleChildScrollView(
@@ -64,9 +63,9 @@ class _BookingScreenState extends State<BookingScreen> {
             Text(locale.get('consultationType'), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: _TypeCard(icon: Iconsax.video, title: locale.get('online'), isSelected: booking.consultationType == 'online', onTap: () => booking.setConsultationType('online'))),
+              Expanded(child: _TypeCard(icon: Iconsax.video, title: locale.get('online'), isSelected: booking.consultationType.value == 'online', onTap: () => booking.setConsultationType('online'))),
               const SizedBox(width: 12),
-              Expanded(child: _TypeCard(icon: Iconsax.building, title: locale.get('clinic'), isSelected: booking.consultationType == 'clinic', onTap: () => booking.setConsultationType('clinic'), enabled: doctor.clinicAddress != null)),
+              Expanded(child: _TypeCard(icon: Iconsax.building, title: locale.get('clinic'), isSelected: booking.consultationType.value == 'clinic', onTap: () => booking.setConsultationType('clinic'), enabled: doctor.clinicAddress != null)),
             ]),
             const SizedBox(height: 24),
             // Date selection
@@ -79,7 +78,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 itemCount: 14,
                 itemBuilder: (context, index) {
                   final date = DateTime.now().add(Duration(days: index + 1));
-                  final isSelected = booking.selectedDate?.day == date.day && booking.selectedDate?.month == date.month;
+                  final isSelected = booking.selectedDate.value?.day == date.day && booking.selectedDate.value?.month == date.month;
                   return _DateCard(date: date, isSelected: isSelected, onTap: () => booking.setDate(date));
                 },
               ),
@@ -88,12 +87,12 @@ class _BookingScreenState extends State<BookingScreen> {
             // Time selection
             Text(locale.get('selectTime'), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            if (booking.selectedDate == null)
+            if (booking.selectedDate.value == null)
               Center(child: Padding(padding: const EdgeInsets.all(20), child: Text(locale.get('selectDate'), style: Theme.of(context).textTheme.bodySmall)))
             else
               Wrap(
                 spacing: 10, runSpacing: 10,
-                children: MockData.timeSlots.map((slot) => _TimeSlot(time: slot.time, isAvailable: slot.isAvailable, isSelected: booking.selectedTime == slot.time, onTap: slot.isAvailable ? () => booking.setTime(slot.time) : null)).toList(),
+                children: MockData.timeSlots.map((slot) => _TimeSlot(time: slot.time, isAvailable: slot.isAvailable, isSelected: booking.selectedTime.value == slot.time, onTap: slot.isAvailable ? () => booking.setTime(slot.time) : null)).toList(),
               ),
           ],
         ),
@@ -101,7 +100,7 @@ class _BookingScreenState extends State<BookingScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
-        child: SafeArea(child: AppButton(text: locale.get('continueToPayment'), onPressed: booking.canProceed ? () => context.push('/payment', extra: widget.doctorId) : null)),
+        child: SafeArea(child: AppButton(text: locale.get('continueToPayment'), onPressed: booking.canProceed ? () => Get.toNamed('/payment', arguments: widget.doctorId) : null)),
       ),
     );
   }
@@ -140,9 +139,9 @@ class _DateCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   const _DateCard({required this.date, required this.isSelected, required this.onTap});
-  
+
   String get dayName => ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][date.weekday % 7];
-  
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

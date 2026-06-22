@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -17,7 +17,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  
+
   final List<Widget> _tabs = [
     const HomeTab(),
     const AppointmentsTab(),
@@ -27,8 +27,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final notifications = Provider.of<NotificationsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final notifications = Get.find<NotificationsController>();
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _tabs),

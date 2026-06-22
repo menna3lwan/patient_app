@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/providers.dart';
 import '../../config/locale.dart';
@@ -10,10 +9,10 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleProvider>();
-    final auth = context.watch<AuthProvider>();
-    final theme = context.watch<ThemeProvider>();
-    final user = auth.user;
+    final locale = Get.find<LocaleController>();
+    final auth = Get.find<AuthController>();
+    final theme = Get.find<ThemeController>();
+    final user = auth.user.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => context.push('/edit-profile'),
+            onPressed: () => Get.toNamed('/edit-profile'),
           ),
         ],
       ),
@@ -93,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   value:
-                      '${context.watch<AppointmentsProvider>().completedAppointments.length}',
+                      '${Get.find<AppointmentsController>().completedAppointments.length}',
                   label: locale.get('completedConsultations'),
                   icon: Icons.check_circle,
                   color: AppColors.success,
@@ -103,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   value:
-                      '${context.watch<FavoritesProvider>().favoriteIds.length}',
+                      '${Get.find<FavoritesController>().favoriteIds.length}',
                   label: locale.get('favoriteDoctors'),
                   icon: Icons.favorite,
                   color: AppColors.error,
@@ -118,18 +117,18 @@ class ProfileScreen extends StatelessWidget {
           _MenuItem(
             icon: Icons.person,
             title: locale.get('editProfile'),
-            onTap: () => context.push('/edit-profile'),
+            onTap: () => Get.toNamed('/edit-profile'),
           ),
           _MenuItem(
             icon: Icons.favorite,
             title: locale.get('favorites'),
-            onTap: () => context.push('/favorites'),
+            onTap: () => Get.toNamed('/favorites'),
           ),
           _MenuItem(
             icon: Icons.notifications,
             title: locale.get('notifications'),
-            badge: '${context.watch<NotificationsProvider>().unreadCount}',
-            onTap: () => context.push('/notifications'),
+            badge: '${Get.find<NotificationsController>().unreadCount}',
+            onTap: () => Get.toNamed('/notifications'),
           ),
           _MenuItem(
             icon: Icons.history,
@@ -148,7 +147,7 @@ class ProfileScreen extends StatelessWidget {
           _MenuItem(
             icon: Icons.language,
             title: locale.get('language'),
-            subtitle: locale.isArabic ? 'العربية' : 'English',
+            subtitle: locale.isArabic.value ? 'العربية' : 'English',
             onTap: () => _showLanguageDialog(context, locale),
           ),
 
@@ -197,7 +196,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showImageOptions(BuildContext context, LocaleProvider locale) {
+  void _showImageOptions(BuildContext context, LocaleController locale) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -253,7 +252,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context, LocaleProvider locale) {
+  void _showLanguageDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -264,7 +263,7 @@ class ProfileScreen extends StatelessWidget {
             ListTile(
               leading: const Text('🇸🇦', style: TextStyle(fontSize: 24)),
               title: const Text('العربية'),
-              trailing: locale.isArabic
+              trailing: locale.isArabic.value
                   ? const Icon(Icons.check, color: AppColors.primary)
                   : null,
               onTap: () {
@@ -275,7 +274,7 @@ class ProfileScreen extends StatelessWidget {
             ListTile(
               leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
               title: const Text('English'),
-              trailing: !locale.isArabic
+              trailing: !locale.isArabic.value
                   ? const Icon(Icons.check, color: AppColors.primary)
                   : null,
               onTap: () {
@@ -289,7 +288,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showMedicalHistory(BuildContext context, LocaleProvider locale) {
+  void _showMedicalHistory(BuildContext context, LocaleController locale) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -353,7 +352,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showHelpSheet(BuildContext context, LocaleProvider locale) {
+  void _showHelpSheet(BuildContext context, LocaleController locale) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -394,14 +393,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showPrivacyDialog(BuildContext context, LocaleProvider locale) {
+  void _showPrivacyDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(locale.get('privacy')),
         content: SingleChildScrollView(
           child: Text(
-            locale.isArabic
+            locale.isArabic.value
                 ? 'نحن نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية.\n\n'
                     '• نجمع فقط البيانات الضرورية لتقديم الخدمة\n'
                     '• لا نشارك بياناتك مع أطراف ثالثة\n'
@@ -427,14 +426,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showTermsDialog(BuildContext context, LocaleProvider locale) {
+  void _showTermsDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(locale.get('terms')),
         content: SingleChildScrollView(
           child: Text(
-            locale.isArabic
+            locale.isArabic.value
                 ? 'شروط الاستخدام:\n\n'
                     '1. يجب أن يكون عمرك 18 سنة أو أكثر\n'
                     '2. المعلومات المقدمة للاستشارات الطبية\n'
@@ -462,7 +461,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showAboutDialog(BuildContext context, LocaleProvider locale) {
+  void _showAboutDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -485,14 +484,14 @@ class ProfileScreen extends StatelessWidget {
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
-              locale.isArabic
+              locale.isArabic.value
                   ? 'منصة طبية متخصصة للمرأة'
                   : 'A Medical Platform for Women',
               style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
             Text(
-              locale.isArabic
+              locale.isArabic.value
                   ? 'تقدم استشارات طبية آمنة وسرية مع أفضل الطبيبات المتخصصات'
                   : 'Providing safe and confidential medical consultations with the best specialized female doctors',
               textAlign: TextAlign.center,
@@ -509,7 +508,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, LocaleProvider locale) {
+  void _showLogoutDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -523,8 +522,8 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () {
-              context.read<AuthProvider>().logout();
-              context.go('/login');
+              Get.find<AuthController>().logout();
+              Get.offAllNamed('/login');
             },
             child: Text(locale.get('logout')),
           ),

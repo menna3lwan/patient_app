@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -23,15 +22,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final auth = Get.find<AuthController>();
     final success = await auth.login(_emailController.text.trim(), _passwordController.text);
-    if (success && mounted) context.go('/');
+    if (success && mounted) Get.offAllNamed('/');
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final auth = Get.find<AuthController>();
 
     return Scaffold(
       body: SafeArea(
@@ -56,11 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(locale.get('welcomeBack'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color), textAlign: TextAlign.center),
                 const SizedBox(height: 40),
                 // Error message
-                if (auth.error != null) Container(
+                if (auth.error.value != null) Container(
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(color: AppColors.errorLight, borderRadius: BorderRadius.circular(12)),
-                  child: Row(children: [const Icon(Iconsax.warning_2, color: AppColors.error, size: 20), const SizedBox(width: 12), Expanded(child: Text(auth.error!, style: const TextStyle(color: AppColors.error)))]),
+                  child: Row(children: [const Icon(Iconsax.warning_2, color: AppColors.error, size: 20), const SizedBox(width: 12), Expanded(child: Text(auth.error.value!, style: const TextStyle(color: AppColors.error)))]),
                 ),
                 // Email field
                 AppTextField(
@@ -99,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 // Login button
-                AppButton(text: locale.get('login'), onPressed: _login, isLoading: auth.isLoading),
+                AppButton(text: locale.get('login'), onPressed: _login, isLoading: auth.isLoading.value),
                 const SizedBox(height: 24),
                 // Social login
                 Row(children: [const Expanded(child: Divider()), Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(locale.get('orLoginWith'), style: Theme.of(context).textTheme.bodySmall)), const Expanded(child: Divider())]),
@@ -120,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(locale.get('noAccount'), style: Theme.of(context).textTheme.bodyMedium),
-                    TextButton(onPressed: () => context.push('/register'), child: Text(locale.get('register'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                    TextButton(onPressed: () => Get.toNamed('/register'), child: Text(locale.get('register'), style: const TextStyle(fontWeight: FontWeight.bold))),
                   ],
                 ),
               ],

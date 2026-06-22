@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
 import '../../config/providers.dart';
-import '../../widgets/widgets.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -22,19 +20,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _publish() async {
     if (_contentController.text.trim().isEmpty) return;
-    final community = Provider.of<CommunityProvider>(context, listen: false);
+    final community = Get.find<CommunityController>();
     await community.addPost(_contentController.text.trim(), isAnonymous: _isAnonymous);
-    if (mounted) context.pop();
+    if (mounted) Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final community = Provider.of<CommunityProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final community = Get.find<CommunityController>();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.close_circle), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.close_circle), onPressed: () => Get.back()),
         title: Text(locale.get('writePost')),
         actions: [
           TextButton(

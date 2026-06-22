@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
 import '../../config/providers.dart';
 import '../../models/models.dart';
-import '../../widgets/widgets.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -23,10 +21,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    _nameController = TextEditingController(text: auth.user?.name);
-    _phoneController = TextEditingController(text: auth.user?.phone);
-    _selectedGovernorate = auth.user?.governorate;
+    final auth = Get.find<AuthController>();
+    _nameController = TextEditingController(text: auth.user.value?.name);
+    _phoneController = TextEditingController(text: auth.user.value?.phone);
+    _selectedGovernorate = auth.user.value?.governorate;
   }
 
   @override
@@ -34,21 +32,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final locale = Provider.of<LocaleProvider>(context, listen: false);
+    final auth = Get.find<AuthController>();
+    final locale = Get.find<LocaleController>();
     auth.updateProfile(name: _nameController.text.trim(), phone: _phoneController.text.trim(), governorate: _selectedGovernorate);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(locale.get('profileUpdated')), backgroundColor: AppColors.success));
-    context.pop();
+    Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final auth = Get.find<AuthController>();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('editProfile')),
         actions: [TextButton(onPressed: _save, child: Text(locale.get('save'), style: const TextStyle(fontWeight: FontWeight.bold)))],
       ),
@@ -64,7 +62,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Container(
                     width: 100, height: 100,
                     decoration: BoxDecoration(gradient: AppColors.primaryGradient, borderRadius: BorderRadius.circular(28)),
-                    child: Center(child: Text(auth.user?.name.isNotEmpty == true ? auth.user!.name[0] : '👩', style: const TextStyle(fontSize: 40, color: Colors.white))),
+                    child: Center(child: Text(auth.user.value?.name.isNotEmpty == true ? auth.user.value!.name[0] : '👩', style: const TextStyle(fontSize: 40, color: Colors.white))),
                   ),
                   Positioned(
                     bottom: 0, right: 0,
@@ -89,7 +87,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 label: locale.get('email'),
                 prefixIcon: const Icon(Iconsax.sms),
                 enabled: false,
-                controller: TextEditingController(text: auth.user?.email),
+                controller: TextEditingController(text: auth.user.value?.email),
               ),
               const SizedBox(height: 16),
               // Phone
@@ -131,7 +129,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  void _showPhotoOptions(BuildContext context, LocaleProvider locale) {
+  void _showPhotoOptions(BuildContext context, LocaleController locale) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Padding(
@@ -149,7 +147,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context, LocaleProvider locale) {
+  void _showChangePasswordDialog(BuildContext context, LocaleController locale) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -172,7 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  void _showDeleteAccountDialog(BuildContext context, LocaleProvider locale, AuthProvider auth) {
+  void _showDeleteAccountDialog(BuildContext context, LocaleController locale, AuthController auth) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -180,7 +178,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         content: Text(locale.get('deleteAccountConfirm')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(locale.get('cancel'))),
-          ElevatedButton(onPressed: () { auth.logout(); Navigator.pop(ctx); context.go('/login'); }, style: ElevatedButton.styleFrom(backgroundColor: AppColors.error), child: Text(locale.get('delete'))),
+          ElevatedButton(onPressed: () { auth.logout(); Navigator.pop(ctx); Get.offAllNamed('/login'); }, style: ElevatedButton.styleFrom(backgroundColor: AppColors.error), child: Text(locale.get('delete'))),
         ],
       ),
     );

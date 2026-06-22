@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/providers.dart';
 import '../../models/models.dart';
@@ -11,9 +10,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().user;
-    final notif = context.watch<NotificationsProvider>();
-    final upcoming = context.watch<AppointmentsProvider>().upcoming;
+    final user = Get.find<AuthController>().user.value;
+    final notif = Get.find<NotificationsController>();
+    final upcoming = Get.find<AppointmentsController>().upcoming;
     final doctors = MockData.doctors.where((d) => d.rating >= 4.7).toList();
 
     return Scaffold(
@@ -32,7 +31,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               IconButton(
                   icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () => context.push('/notifications')),
+                  onPressed: () => Get.toNamed('/notifications')),
               if (notif.unread > 0)
                 Positioned(
                     right: 8,
@@ -55,7 +54,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Search
             GestureDetector(
-              onTap: () => context.push('/search'),
+              onTap: () => Get.toNamed('/search'),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -111,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.primary),
-                      onPressed: () => context.go('/appointments'),
+                      onPressed: () => Get.offAllNamed('/appointments'),
                       child: const Text('عرض'),
                     ),
                   ],
@@ -131,17 +130,17 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.pregnant_woman,
                     title: 'نساء وتوليد',
                     color: AppColors.primary,
-                    onTap: () => context.push('/search', extra: 'gynecology')),
+                    onTap: () => Get.toNamed('/search', arguments: 'gynecology')),
                 _SpecialtyCard(
                     icon: Icons.face_retouching_natural,
                     title: 'جلدية',
                     color: Colors.purple,
-                    onTap: () => context.push('/search', extra: 'dermatology')),
+                    onTap: () => Get.toNamed('/search', arguments: 'dermatology')),
                 _SpecialtyCard(
                     icon: Icons.psychology,
                     title: 'نفسية',
                     color: Colors.blue,
-                    onTap: () => context.push('/search', extra: 'psychology')),
+                    onTap: () => Get.toNamed('/search', arguments: 'psychology')),
               ],
             ),
             const SizedBox(height: 24),
@@ -154,7 +153,7 @@ class HomeScreen extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 TextButton(
-                    onPressed: () => context.push('/search'),
+                    onPressed: () => Get.toNamed('/search'),
                     child: const Text('عرض الكل')),
               ],
             ),
@@ -163,8 +162,8 @@ class HomeScreen extends StatelessWidget {
                   name: d.name,
                   specialty: d.specialtyAr,
                   rating: d.rating,
-                  reviewsCount: d.reviewsCount, // ✅
-                  experience: d.experienceYears,  
+                  reviewsCount: d.reviewsCount,
+                  experience: d.experienceYears,
                   fee: d.consultationFee,
                 )),
           ],

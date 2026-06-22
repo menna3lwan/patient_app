@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -30,18 +29,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreeToTerms) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يجب الموافقة على الشروط والأحكام'))); return; }
-    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final auth = Get.find<AuthController>();
     final success = await auth.register(name: _nameController.text.trim(), email: _emailController.text.trim(), phone: _phoneController.text.trim(), password: _passwordController.text, governorate: _selectedGovernorate ?? 'القاهرة');
-    if (success && mounted) context.go('/');
+    if (success && mounted) Get.offAllNamed('/');
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final auth = Get.find<AuthController>();
 
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop())),
+      appBar: AppBar(leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back())),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -56,10 +55,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Text(locale.get('appSlogan'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color)),
                 const SizedBox(height: 32),
                 // Error message
-                if (auth.error != null) Container(
+                if (auth.error.value != null) Container(
                   padding: const EdgeInsets.all(12), margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(color: AppColors.errorLight, borderRadius: BorderRadius.circular(12)),
-                  child: Row(children: [const Icon(Iconsax.warning_2, color: AppColors.error, size: 20), const SizedBox(width: 12), Expanded(child: Text(auth.error!, style: const TextStyle(color: AppColors.error)))]),
+                  child: Row(children: [const Icon(Iconsax.warning_2, color: AppColors.error, size: 20), const SizedBox(width: 12), Expanded(child: Text(auth.error.value!, style: const TextStyle(color: AppColors.error)))]),
                 ),
                 // Name field
                 AppTextField(
@@ -117,14 +116,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 // Register button
-                AppButton(text: locale.get('register'), onPressed: _register, isLoading: auth.isLoading),
+                AppButton(text: locale.get('register'), onPressed: _register, isLoading: auth.isLoading.value),
                 const SizedBox(height: 24),
                 // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(locale.get('hasAccount'), style: Theme.of(context).textTheme.bodyMedium),
-                    TextButton(onPressed: () => context.pop(), child: Text(locale.get('login'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                    TextButton(onPressed: () => Get.back(), child: Text(locale.get('login'), style: const TextStyle(fontWeight: FontWeight.bold))),
                   ],
                 ),
               ],

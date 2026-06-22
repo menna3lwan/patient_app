@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -11,8 +11,8 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleProvider>();
-    final notificationsProvider = context.watch<NotificationsProvider>();
+    final locale = Get.find<LocaleController>();
+    final notificationsProvider = Get.find<NotificationsController>();
     final notifications = notificationsProvider.notifications;
 
     return Scaffold(

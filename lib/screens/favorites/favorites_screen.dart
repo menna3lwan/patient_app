@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../config/locale.dart';
 import '../../config/providers.dart';
-import '../../models/models.dart';
 import '../../widgets/widgets.dart';
 
 class FavoritesScreen extends StatelessWidget {
@@ -12,10 +10,10 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<LocaleProvider>();
-    final favoritesProvider = context.watch<FavoritesProvider>();
-    final doctorsProvider = context.watch<DoctorsProvider>();
-    
+    final locale = Get.find<LocaleController>();
+    final favoritesProvider = Get.find<FavoritesController>();
+    final doctorsProvider = Get.find<DoctorsController>();
+
     final favoriteDoctors = doctorsProvider.allDoctors
         .where((d) => favoritesProvider.isFavorite(d.id))
         .toList();
@@ -37,7 +35,7 @@ class FavoritesScreen extends StatelessWidget {
               title: locale.get('noFavorites'),
               subtitle: locale.get('addFavoritesHint'),
               buttonText: locale.get('browseDoctors'),
-              onButtonPressed: () => context.push('/search'),
+              onButtonPressed: () => Get.toNamed('/search'),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -53,7 +51,7 @@ class FavoritesScreen extends StatelessWidget {
                   fee: doctor.consultationFee,
                   isOnline: doctor.isOnline,
                   isFavorite: true,
-                  onTap: () => context.push('/doctor/${doctor.id}'),
+                  onTap: () => Get.toNamed('/doctor/${doctor.id}'),
                   onFavoritePressed: () {
                     favoritesProvider.toggleFavorite(doctor.id);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -73,7 +71,7 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 
-  void _showClearConfirmation(BuildContext context, LocaleProvider locale, FavoritesProvider provider) {
+  void _showClearConfirmation(BuildContext context, LocaleController locale, FavoritesController provider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

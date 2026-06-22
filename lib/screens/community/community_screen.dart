@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/providers.dart';
@@ -16,7 +16,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CommunityProvider>();
+    final provider = Get.find<CommunityController>();
     final posts = provider.posts;
 
     return Scaffold(

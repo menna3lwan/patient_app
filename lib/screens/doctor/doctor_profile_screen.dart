@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shared_ui/shared_ui.dart';
@@ -15,9 +14,9 @@ class DoctorProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final doctors = Provider.of<DoctorsProvider>(context);
-    final favorites = Provider.of<FavoritesProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final doctors = Get.find<DoctorsController>();
+    final favorites = Get.find<FavoritesController>();
     final doctor = doctors.getDoctorById(doctorId);
 
     if (doctor == null) {
@@ -33,7 +32,7 @@ class DoctorProfileScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            leading: IconButton(icon: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(12)), child: const Icon(Iconsax.arrow_right_3, color: Colors.white)), onPressed: () => context.pop()),
+            leading: IconButton(icon: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(12)), child: const Icon(Iconsax.arrow_right_3, color: Colors.white)), onPressed: () => Get.back()),
             actions: [
               IconButton(icon: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(12)), child: Icon(isFav ? Iconsax.heart5 : Iconsax.heart, color: isFav ? AppColors.error : Colors.white)), onPressed: () => favorites.toggleFavorite(doctor.id)),
               IconButton(icon: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(12)), child: const Icon(Iconsax.share, color: Colors.white)), onPressed: () {}),
@@ -129,7 +128,7 @@ class DoctorProfileScreen extends StatelessWidget {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
-        child: SafeArea(child: AppButton(text: locale.get('bookNow'), onPressed: () => context.push('/booking/${doctor.id}'))),
+        child: SafeArea(child: AppButton(text: locale.get('bookNow'), onPressed: () => Get.toNamed('/booking/${doctor.id}'))),
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -11,10 +10,10 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context);
-    final auth = Provider.of<AuthProvider>(context);
-    final notifications = Provider.of<NotificationsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final theme = Get.find<ThemeController>();
+    final auth = Get.find<AuthController>();
+    final notifications = Get.find<NotificationsController>();
 
     return Scaffold(
       body: SafeArea(
@@ -34,37 +33,37 @@ class ProfileTab extends StatelessWidget {
                     Container(
                       width: 70, height: 70,
                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                      child: Center(child: Text(auth.user?.name.isNotEmpty == true ? auth.user!.name[0] : '👩', style: TextStyle(fontSize: 32, color: AppColors.primary, fontWeight: FontWeight.bold))),
+                      child: Center(child: Text(auth.user.value?.name.isNotEmpty == true ? auth.user.value!.name[0] : '👩', style: TextStyle(fontSize: 32, color: AppColors.primary, fontWeight: FontWeight.bold))),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(auth.user?.name ?? locale.get('guest'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(auth.user.value?.name ?? locale.get('guest'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text(auth.user?.email ?? '', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                          Text(auth.user.value?.email ?? '', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
                           const SizedBox(height: 4),
-                          Text(auth.user?.phone ?? '', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
+                          Text(auth.user.value?.phone ?? '', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
                         ],
                       ),
                     ),
-                    IconButton(icon: const Icon(Iconsax.edit, color: Colors.white), onPressed: () => context.push('/edit-profile')),
+                    IconButton(icon: const Icon(Iconsax.edit, color: Colors.white), onPressed: () => Get.toNamed('/edit-profile')),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
               // Menu items
               _MenuSection(title: locale.get('account'), items: [
-                _MenuItem(icon: Iconsax.user_edit, title: locale.get('editProfile'), onTap: () => context.push('/edit-profile')),
-                _MenuItem(icon: Iconsax.heart, title: locale.get('favorites'), onTap: () => context.push('/favorites')),
-                _MenuItem(icon: Iconsax.notification, title: locale.get('notifications'), badge: notifications.unreadCount, onTap: () => context.push('/notifications')),
+                _MenuItem(icon: Iconsax.user_edit, title: locale.get('editProfile'), onTap: () => Get.toNamed('/edit-profile')),
+                _MenuItem(icon: Iconsax.heart, title: locale.get('favorites'), onTap: () => Get.toNamed('/favorites')),
+                _MenuItem(icon: Iconsax.notification, title: locale.get('notifications'), badge: notifications.unreadCount, onTap: () => Get.toNamed('/notifications')),
                 _MenuItem(icon: Iconsax.document_text, title: locale.get('medicalHistory'), onTap: () {}),
               ]),
               const SizedBox(height: 16),
               _MenuSection(title: locale.get('appearance'), items: [
                 _MenuItem(icon: theme.isDark ? Iconsax.moon : Iconsax.sun_1, title: theme.isDark ? locale.get('darkMode') : locale.get('lightMode'), trailing: Switch(value: theme.isDark, onChanged: (_) => theme.toggleTheme(), activeColor: AppColors.primary)),
-                _MenuItem(icon: Iconsax.language_circle, title: locale.get('language'), trailing: Text(locale.isArabic ? 'العربية' : 'English', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)), onTap: () => locale.toggle()),
+                _MenuItem(icon: Iconsax.language_circle, title: locale.get('language'), trailing: Text(locale.isArabic.value ? 'العربية' : 'English', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)), onTap: () => locale.toggle()),
               ]),
               const SizedBox(height: 16),
               _MenuSection(title: locale.get('support'), items: [
@@ -94,7 +93,7 @@ class ProfileTab extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, LocaleProvider locale, AuthProvider auth) {
+  void _showLogoutDialog(BuildContext context, LocaleController locale, AuthController auth) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -103,7 +102,7 @@ class ProfileTab extends StatelessWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(locale.get('cancel'))),
           ElevatedButton(
-            onPressed: () { auth.logout(); Navigator.pop(ctx); context.go('/login'); },
+            onPressed: () { auth.logout(); Navigator.pop(ctx); Get.offAllNamed('/login'); },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: Text(locale.get('logout')),
           ),

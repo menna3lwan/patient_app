@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -22,7 +21,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final doctors = Provider.of<DoctorsProvider>(context, listen: false);
+      final doctors = Get.find<DoctorsController>();
       doctors.clearFilters();
       if (widget.specialty != null) doctors.setSpecialty(widget.specialty);
     });
@@ -33,13 +32,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final doctors = Provider.of<DoctorsProvider>(context);
-    final favorites = Provider.of<FavoritesProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final doctors = Get.find<DoctorsController>();
+    final favorites = Get.find<FavoritesController>();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('search')),
         actions: [IconButton(icon: const Icon(Iconsax.filter), onPressed: () => _showFilterSheet(context, doctors, locale))],
       ),
@@ -65,11 +64,11 @@ class _SearchScreenState extends State<SearchScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _FilterChip(label: locale.get('all'), isSelected: doctors.selectedSpecialty == null, onTap: () => doctors.setSpecialty(null)),
+                _FilterChip(label: locale.get('all'), isSelected: doctors.selectedSpecialty.value == null, onTap: () => doctors.setSpecialty(null)),
                 const SizedBox(width: 8),
                 ...MockData.specialties.map((s) => Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: _FilterChip(label: locale.isArabic ? s.nameAr : s.nameEn, isSelected: doctors.selectedSpecialty == s.id, onTap: () => doctors.setSpecialty(s.id)),
+                  child: _FilterChip(label: locale.isArabic.value ? s.nameAr : s.nameEn, isSelected: doctors.selectedSpecialty.value == s.id, onTap: () => doctors.setSpecialty(s.id)),
                 )),
               ],
             ),
@@ -112,7 +111,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         fee: doctor.consultationFee,
                         isOnline: doctor.isOnline,
                         isFavorite: favorites.isFavorite(doctor.id),
-                        onTap: () => context.push('/doctor/${doctor.id}'),
+                        onTap: () => Get.toNamed('/doctor/${doctor.id}'),
                         onFavoritePressed: () => favorites.toggleFavorite(doctor.id),
                       );
                     },
@@ -123,7 +122,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  void _showFilterSheet(BuildContext context, DoctorsProvider doctors, LocaleProvider locale) {
+  void _showFilterSheet(BuildContext context, DoctorsController doctors, LocaleController locale) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Padding(
@@ -139,8 +138,8 @@ class _SearchScreenState extends State<SearchScreen> {
             Wrap(
               spacing: 8, runSpacing: 8,
               children: [
-                _FilterChip(label: locale.get('all'), isSelected: doctors.selectedSpecialty == null, onTap: () { doctors.setSpecialty(null); Navigator.pop(ctx); }),
-                ...MockData.specialties.map((s) => _FilterChip(label: locale.isArabic ? s.nameAr : s.nameEn, isSelected: doctors.selectedSpecialty == s.id, onTap: () { doctors.setSpecialty(s.id); Navigator.pop(ctx); })),
+                _FilterChip(label: locale.get('all'), isSelected: doctors.selectedSpecialty.value == null, onTap: () { doctors.setSpecialty(null); Navigator.pop(ctx); }),
+                ...MockData.specialties.map((s) => _FilterChip(label: locale.isArabic.value ? s.nameAr : s.nameEn, isSelected: doctors.selectedSpecialty.value == s.id, onTap: () { doctors.setSpecialty(s.id); Navigator.pop(ctx); })),
               ],
             ),
             const SizedBox(height: 24),

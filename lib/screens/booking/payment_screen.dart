@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -24,30 +23,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _confirmPayment() async {
     setState(() => _isLoading = true);
-    final doctors = Provider.of<DoctorsProvider>(context, listen: false);
-    final booking = Provider.of<BookingProvider>(context, listen: false);
-    final appointments = Provider.of<AppointmentsProvider>(context, listen: false);
+    final doctors = Get.find<DoctorsController>();
+    final booking = Get.find<BookingController>();
+    final appointments = Get.find<AppointmentsController>();
     final doctor = doctors.getDoctorById(widget.doctorId);
-    
-    if (doctor == null || booking.selectedDate == null || booking.selectedTime == null) return;
-    
+
+    if (doctor == null || booking.selectedDate.value == null || booking.selectedTime.value == null) return;
+
     await Future.delayed(const Duration(seconds: 1));
     final apt = await appointments.bookAppointment(
       doctor: doctor,
-      date: booking.selectedDate!,
-      time: booking.selectedTime!,
-      type: booking.consultationType,
+      date: booking.selectedDate.value!,
+      time: booking.selectedTime.value!,
+      type: booking.consultationType.value,
       amount: booking.calculateTotal(doctor.consultationFee),
     );
-    
-    if (mounted) context.go('/booking-success', extra: apt.id);
+
+    if (mounted) Get.offAllNamed('/booking-success', arguments: apt.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final doctors = Provider.of<DoctorsProvider>(context);
-    final booking = Provider.of<BookingProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final doctors = Get.find<DoctorsController>();
+    final booking = Get.find<BookingController>();
     final doctor = doctors.getDoctorById(widget.doctorId);
 
     if (doctor == null) {
@@ -55,13 +54,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
 
     final fee = doctor.consultationFee;
-    final discount = fee * booking.discount;
+    final discount = fee * booking.discount.value;
     final serviceFee = 10.0;
     final total = fee - discount + serviceFee;
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('payment')),
       ),
       body: SingleChildScrollView(
@@ -83,11 +82,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ])),
                   ]),
                   const Divider(height: 24),
-                  _InfoRow(icon: Iconsax.calendar, label: locale.get('selectDate'), value: '${booking.selectedDate?.day}/${booking.selectedDate?.month}/${booking.selectedDate?.year}'),
+                  _InfoRow(icon: Iconsax.calendar, label: locale.get('selectDate'), value: '${booking.selectedDate.value?.day}/${booking.selectedDate.value?.month}/${booking.selectedDate.value?.year}'),
                   const SizedBox(height: 8),
-                  _InfoRow(icon: Iconsax.clock, label: locale.get('selectTime'), value: booking.selectedTime ?? ''),
+                  _InfoRow(icon: Iconsax.clock, label: locale.get('selectTime'), value: booking.selectedTime.value ?? ''),
                   const SizedBox(height: 8),
-                  _InfoRow(icon: booking.consultationType == 'online' ? Iconsax.video : Iconsax.building, label: locale.get('consultationType'), value: booking.consultationType == 'online' ? locale.get('online') : locale.get('clinic')),
+                  _InfoRow(icon: booking.consultationType.value == 'online' ? Iconsax.video : Iconsax.building, label: locale.get('consultationType'), value: booking.consultationType.value == 'online' ? locale.get('online') : locale.get('clinic')),
                 ]),
               ),
             ),
@@ -120,7 +119,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(children: [
                   _PriceRow(label: locale.get('subtotal'), value: '${fee.toInt()} ${locale.get('egp')}'),
-                  if (booking.discount > 0) _PriceRow(label: locale.get('discount'), value: '-${discount.toInt()} ${locale.get('egp')}', isDiscount: true),
+                  if (booking.discount.value > 0) _PriceRow(label: locale.get('discount'), value: '-${discount.toInt()} ${locale.get('egp')}', isDiscount: true),
                   _PriceRow(label: locale.get('serviceFee'), value: '${serviceFee.toInt()} ${locale.get('egp')}'),
                   const Divider(height: 24),
                   _PriceRow(label: locale.get('total'), value: '${total.toInt()} ${locale.get('egp')}', isTotal: true),

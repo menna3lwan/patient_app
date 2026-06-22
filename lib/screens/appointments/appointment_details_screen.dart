@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -13,8 +12,8 @@ class AppointmentDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final appointments = Provider.of<AppointmentsProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final appointments = Get.find<AppointmentsController>();
     final apt = appointments.getAppointmentById(appointmentId);
 
     if (apt == null) {
@@ -25,7 +24,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Iconsax.arrow_right_3), onPressed: () => Get.back()),
         title: Text(locale.get('appointmentDetails')),
       ),
       body: SingleChildScrollView(
@@ -53,7 +52,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(children: [const Icon(Icons.star_rounded, size: 16, color: Colors.amber), const SizedBox(width: 4), Text('${apt.doctor.rating}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))]),
                   ])),
-                  IconButton(icon: const Icon(Iconsax.arrow_left_2), onPressed: () => context.push('/doctor/${apt.doctor.id}')),
+                  IconButton(icon: const Icon(Iconsax.arrow_left_2), onPressed: () => Get.toNamed('/doctor/${apt.doctor.id}')),
                 ]),
               ),
             ),
@@ -75,7 +74,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             // Actions
-            if (apt.status == 'confirmed') AppButton(text: locale.get('startConsultation'), onPressed: () => context.push('/chat/$appointmentId'), icon: Iconsax.video),
+            if (apt.status == 'confirmed') AppButton(text: locale.get('startConsultation'), onPressed: () => Get.toNamed('/chat/$appointmentId'), icon: Iconsax.video),
             if (apt.status == 'pending' || apt.status == 'confirmed') ...[
               const SizedBox(height: 12),
               AppButton(text: locale.get('cancelAppointment'), onPressed: () => _showCancelDialog(context, apt.id, appointments, locale), isOutlined: true, color: AppColors.error),
@@ -86,7 +85,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
     );
   }
 
-  void _showCancelDialog(BuildContext context, String id, AppointmentsProvider provider, LocaleProvider locale) {
+  void _showCancelDialog(BuildContext context, String id, AppointmentsController provider, LocaleController locale) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -94,7 +93,7 @@ class AppointmentDetailsScreen extends StatelessWidget {
         content: Text(locale.get('cancelConfirm')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(locale.get('no'))),
-          ElevatedButton(onPressed: () { provider.cancelAppointment(id); Navigator.pop(ctx); context.pop(); }, style: ElevatedButton.styleFrom(backgroundColor: AppColors.error), child: Text(locale.get('yes'))),
+          ElevatedButton(onPressed: () { provider.cancelAppointment(id); Navigator.pop(ctx); Get.back(); }, style: ElevatedButton.styleFrom(backgroundColor: AppColors.error), child: Text(locale.get('yes'))),
         ],
       ),
     );

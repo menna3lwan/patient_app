@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -12,8 +11,8 @@ class CommunityTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final community = Provider.of<CommunityProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final community = Get.find<CommunityController>();
 
     return Scaffold(
       appBar: AppBar(title: Text(locale.get('communityTitle'))),
@@ -21,7 +20,7 @@ class CommunityTab extends StatelessWidget {
         children: [
           // Write post card
           GestureDetector(
-            onTap: () => context.push('/create-post'),
+            onTap: () => Get.toNamed('/create-post'),
             child: Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
@@ -37,7 +36,7 @@ class CommunityTab extends StatelessWidget {
           // Posts list
           Expanded(
             child: community.posts.isEmpty
-                ? EmptyState(icon: Iconsax.message, title: locale.get('noResults'), buttonText: locale.get('writePost'), onButtonPressed: () => context.push('/create-post'))
+                ? EmptyState(icon: Iconsax.message, title: locale.get('noResults'), buttonText: locale.get('writePost'), onButtonPressed: () => Get.toNamed('/create-post'))
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: community.posts.length,
@@ -56,8 +55,8 @@ class _PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
-    final community = Provider.of<CommunityProvider>(context);
+    final locale = Get.find<LocaleController>();
+    final community = Get.find<CommunityController>();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -99,8 +98,8 @@ class _PostCard extends StatelessWidget {
   }
 
   void _showComments(BuildContext context, dynamic post) {
-    final locale = Provider.of<LocaleProvider>(context, listen: false);
-    final community = Provider.of<CommunityProvider>(context, listen: false);
+    final locale = Get.find<LocaleController>();
+    final community = Get.find<CommunityController>();
     final controller = TextEditingController();
     bool isAnonymous = false;
 

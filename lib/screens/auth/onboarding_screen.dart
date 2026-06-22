@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_ui/shared_ui.dart';
 import '../../config/locale.dart';
@@ -29,13 +28,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_currentPage < _pages.length - 1) {
       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
-      context.go('/login');
+      Get.offAllNamed('/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale = Provider.of<LocaleProvider>(context);
+    final locale = Get.find<LocaleController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -46,7 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Align(
               alignment: AlignmentDirectional.topEnd,
               child: TextButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () => Get.offAllNamed('/login'),
                 child: Text(locale.get('skip'), style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
               ),
             ),
